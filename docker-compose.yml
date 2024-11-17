@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:   
+  mongodb:
+    hostname: mongodb_store
+    container_name: mongodb_store
+    image: mongo:8.0.3
+    # environment:
+    #   - MONGO_INITDB_ROOT_USERNAME=user
+    #   - MONGO_INITDB_ROOT_PASSWORD=pass
+    restart: unless-stopped
+    ports:
+      - 27017:27017
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+
+volumes:
+  mongodb_data:
+  mongodb_config:
