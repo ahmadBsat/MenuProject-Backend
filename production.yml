@@ -82,3 +82,4 @@ networks:
 volumes:
   mongodb_data:
   mongodb_config:
+  letsencrypt:
