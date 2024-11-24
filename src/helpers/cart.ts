@@ -66,11 +66,7 @@ export const getCartData = async (
 
   const { products } = await handleProducts({
     rate,
-    get_meta: false,
-    filter: {
-      _id: { $in: product_ids },
-      is_active: true,
-    },
+    pipeline: [{ $match: { _id: { $in: product_ids }, is_active: true } }],
   });
 
   let total_price = 0;

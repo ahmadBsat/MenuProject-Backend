@@ -1,22 +1,19 @@
 services:
   store:
-      image: ghcr.io/abdellatif-e/store-backend:prod
+      image: ghcr.io/ahmadbsat/menuproject-backend:production
       labels:
       - "traefik.enable=true"
       - "traefik.http.services.store.loadbalancer.sticky=true"
-      - "traefik.http.services.store.loadbalancer.sticky.cookie.name=AgentSessionCookie"
+      - "traefik.http.services.store.loadbalancer.sticky.cookie.name=StoreSessionCookie"
       - "traefik.http.services.store.loadbalancer.sticky.cookie.secure=true"
       - "traefik.http.services.store.loadbalancer.server.port=8080"
       - "traefik.docker.network=store"
-      - "traefik.http.routers.store.rule=Host(`api.uraiagent.com`)"
+      - "traefik.http.routers.store.rule=Host(`api.fmcshops.com`)"
       - "traefik.http.routers.store.entrypoints=websecure"
       - "traefik.http.routers.store.tls.certresolver=myresolver"
       - "com.centurylinklabs.watchtower.enable=true"
       restart: always
-      links:
-        - redis
       depends_on:
-        - redis
         - mongodb
         - reverse-proxy
       env_file:
@@ -24,7 +21,7 @@ services:
       networks:
         - store
       volumes:
-        - /home/zeus/.docker/config.json:/config.json
+        - /home/ahmad/.docker/config.json:/config.json
       deploy:
         mode: replicated
         replicas: 2
@@ -37,18 +34,9 @@ services:
       - "30"
       - "--rolling-restart"
       - "--cleanup"
-    environment:
-      - WATCHTOWER_NOTIFICATIONS=email
-      - WATCHTOWER_NOTIFICATION_EMAIL_FROM=watchtower@uraiagent.com
-      - WATCHTOWER_NOTIFICATION_EMAIL_TO=abdellatif.edlby@gmail.com
-      - WATCHTOWER_NOTIFICATION_EMAIL_SERVER=smtp.resend.com
-      - WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PORT=465
-      - WATCHTOWER_NOTIFICATION_EMAIL_SERVER_USER=resend
-      - WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PASSWORD=${RESEND_TOKEN}
-      - WATCHTOWER_NOTIFICATION_EMAIL_DELAY=2
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /home/zeus/.docker/config.json:/config.json
+      - /home/ahmad/.docker/config.json:/config.json
 
   reverse-proxy:
     image: traefik:v3.1
@@ -57,7 +45,7 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--entryPoints.websecure.address=:443"
       - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
-      - "--certificatesresolvers.myresolver.acme.email=abdellatif@uraiagent.com"
+      - "--certificatesresolvers.myresolver.acme.email=ahmad.bsat.15.3@gmail.com"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"

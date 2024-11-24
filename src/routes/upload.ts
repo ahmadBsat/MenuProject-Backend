@@ -1,7 +1,7 @@
 import express from "express";
+import { isAuthenticated } from "../middlewares";
 import { uploadMutler } from "../middlewares/upload";
 import { delete_file, upload_files } from "../controllers/upload";
-import { isAuthenticated } from "middlewares";
 
 export default (router: express.Router) => {
   router.post(

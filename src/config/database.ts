@@ -12,7 +12,7 @@ dotenv.config();
 
   const initialize_db_connection = async (): Promise<void> => {
     try {
-      const options: mongoose.ConnectOptions = { dbName: "uraiagent" };
+      const options: mongoose.ConnectOptions = { dbName: "menuproject" };
       mongoose.Promise = Promise;
       await mongoose.connect(process.env.MONGODB_URI, options);
       Logger.info("Connected to db");

@@ -4,7 +4,7 @@ import * as dotenv from "dotenv";
 import { UserModel } from "../schemas/user";
 import { ERRORS } from "../constant/errors";
 import { Logger } from "../entities/logger";
-import { USER_ROLES } from "constant/roles";
+import { USER_ROLES } from "../constant/roles";
 import { decodeJWT, generateUserToken } from "../utils/token";
 import { registerValidation } from "../utils/validation/auth";
 import { compareHashedPassword, hashAuthentication } from "../helpers/security";
@@ -16,7 +16,6 @@ export const register = async (req: express.Request, res: express.Response) => {
   session.startTransaction();
 
   try {
-    const session_id = req.cookies["session_id"];
     const { value, error } = registerValidation(req.body);
 
     if (error) {
@@ -56,15 +55,9 @@ export const register = async (req: express.Request, res: express.Response) => {
     Logger.error(error);
     await session.abortTransaction();
 
-    let msg = "Server error please try again later";
-
-    if (error.message) {
-      msg = error.message;
-    }
-
-    return res.status(406).send({ message: msg });
+    return res.status(500).send({ message: ERRORS.SERVER });
   } finally {
-    session.endSession();
+    await session.endSession();
   }
 };
 
@@ -114,9 +107,7 @@ export const login = async (req: express.Request, res: express.Response) => {
     return res.status(200).json({ user: rest, token }).end();
   } catch (error) {
     Logger.error(error);
-    return res
-      .status(406)
-      .send({ message: "Server error please try again later" });
+    return res.status(500).send({ message: ERRORS.SERVER });
   }
 };
 
@@ -203,7 +194,7 @@ export const change_password = async (
       .end();
   } catch (error) {
     Logger.error(error);
-    return res.sendStatus(400);
+    return res.status(500).json({ message: ERRORS.SERVER });
   }
 };
 
@@ -248,7 +239,7 @@ export const forgot_password = async (
       .end();
   } catch (error) {
     Logger.error(error);
-    return res.sendStatus(400);
+    return res.status(500).json({ message: ERRORS.SERVER });
   }
 };
 
@@ -290,6 +281,6 @@ export const reset_user_password = async (
       .end();
   } catch (error) {
     Logger.error(error);
-    return res.sendStatus(400);
+    return res.status(500).json({ message: ERRORS.SERVER });
   }
 };
