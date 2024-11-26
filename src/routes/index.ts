@@ -5,6 +5,7 @@ import dashboard from "./dashboard";
 import store from "./store/store";
 import product from "./product/product";
 import store_branch from "./store/store_branch";
+import user from "./user";
 
 const router = express.Router();
 
@@ -15,6 +16,7 @@ export default (): express.Router => {
   store(router);
   store_branch(router);
   product(router);
+  user(router);
 
   return router;
 };
