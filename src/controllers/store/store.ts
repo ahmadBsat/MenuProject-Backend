@@ -78,6 +78,12 @@ export const createStoreAdmin = async (
   try {
     const data = req.body;
 
+    const check_owner = await StoreModel.findOne({ owner: data.owner }).lean();
+
+    if (check_owner) {
+      return res.status(400).json({ message: "User already have a store" });
+    }
+
     await StoreModel.create({ ...data });
 
     return res.status(200).json(success_msg("Store created")).end();
@@ -97,6 +103,15 @@ export const updateStoreAdmin = async (
 
     if (!id) {
       return res.status(400).json({ message: ERRORS.STORE_ID_REQUIRED });
+    }
+
+    const check_owner = await StoreModel.findOne({
+      owner: data.owner,
+      _id: { $nin: [id] },
+    }).lean();
+
+    if (check_owner) {
+      return res.status(400).json({ message: "User already have a store" });
     }
 
     await StoreModel.updateOne(
