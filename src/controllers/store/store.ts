@@ -84,7 +84,10 @@ export const createStoreAdmin = async (
       return res.status(400).json({ message: "User already have a store" });
     }
 
-    await StoreModel.create({ ...data });
+    const renewal = new Date();
+    renewal.setMonth(renewal.getMonth() + 1);
+
+    await StoreModel.create({ ...data, renewal_date: renewal });
 
     return res.status(200).json(success_msg("Store created")).end();
   } catch (error) {
@@ -173,6 +176,36 @@ export const deleteStoreAdmin = async (
     await StoreBranchModel.deleteMany({ store: store._id });
     await ProductModel.deleteMany({ _id: { $in: products } });
     await ProductItemModel.deleteMany({ product: { $in: products } });
+
+    return res.status(200).json(success_msg("Store updated")).end();
+  } catch (error) {
+    Logger.error(error);
+    return res.status(406).send({ message: error.message || ERRORS.SERVER });
+  }
+};
+
+export const renewStorePlan = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ message: ERRORS.STORE_ID_REQUIRED });
+    }
+
+    const store = await StoreModel.findById(id);
+
+    if (!store) {
+      return res.status(404).json({ message: ERRORS.STORE_NOT_FOUND });
+    }
+
+    const date = new Date(store.renewal_date);
+    date.setMonth(date.getMonth() + 1);
+
+    store.renewal_date = date;
+    await store.save();
 
     return res.status(200).json(success_msg("Store updated")).end();
   } catch (error) {

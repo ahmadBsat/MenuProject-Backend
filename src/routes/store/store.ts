@@ -8,6 +8,7 @@ import {
   deleteStoreAdmin,
   updateStoreAdmin,
   updateStoreUser,
+  renewStorePlan,
 } from "../../controllers/store/store";
 
 export default (router: express.Router) => {
@@ -20,6 +21,12 @@ export default (router: express.Router) => {
     isAuthenticated,
     isAdmin,
     createStoreAdmin
+  );
+  router.post(
+    "/api/v1/admin/renew/:id",
+    isAuthenticated,
+    isAdmin,
+    renewStorePlan
   );
 
   router.patch("/api/v1/store", isAuthenticated, updateStoreUser);
