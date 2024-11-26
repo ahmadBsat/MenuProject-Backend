@@ -127,7 +127,6 @@ export const validate = async (req: express.Request, res: express.Response) => {
       _id: decodedToken._id,
       is_active: true,
       is_archived: false,
-      email_verified: true,
     }).lean();
 
     if (!user) {
