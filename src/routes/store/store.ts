@@ -31,7 +31,7 @@ export default (router: express.Router) => {
   );
 
   router.delete(
-    "/api/v1/admin/store",
+    "/api/v1/admin/store/:id",
     isAuthenticated,
     isAdmin,
     deleteStoreAdmin
