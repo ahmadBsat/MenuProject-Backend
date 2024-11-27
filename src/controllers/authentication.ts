@@ -136,8 +136,7 @@ export const validate = async (req: express.Request, res: express.Response) => {
       });
     }
 
-    const { authentication, is_active, is_archived, is_super_admin, ...rest } =
-      user;
+    const { authentication, is_active, is_archived, ...rest } = user;
 
     return res.status(200).json({ user: rest, token }).end();
   } catch (error) {

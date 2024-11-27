@@ -31,6 +31,26 @@ export const getAllStores = async (
   }
 };
 
+export const getStoreByDomain = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { domain } = req.params;
+
+    if (!domain) {
+      return res.status(400).json({ message: ERRORS.STORE_ID_REQUIRED });
+    }
+
+    const store = await StoreModel.findOne({ domain: domain }).lean();
+
+    return res.status(200).json(store).end();
+  } catch (error) {
+    Logger.error(error);
+    return res.status(406).send({ message: error.message || ERRORS.SERVER });
+  }
+};
+
 export const getStoreById = async (
   req: express.Request,
   res: express.Response

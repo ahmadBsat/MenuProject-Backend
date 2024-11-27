@@ -9,7 +9,7 @@ export const CurrencySchema = new mongoose.Schema(
     },
     name: { type: String, required: true },
     rate_change: { type: Number, required: true },
-    // is_active: { type: Boolean, required: true, default: false },
+    is_active: { type: Boolean, required: true },
   },
   { timestamps: true }
 );

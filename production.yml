@@ -1,4 +1,21 @@
 services:
+  store-frontend:
+    image: ghcr.io/ahmadbsat/menuproject-frontend:production
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.store-frontend.loadbalancer.server.port=3000"
+      - "traefik.docker.network=store"
+      - "traefik.http.routers.store-frontend.rule=Host(`fmcshops.com`)"
+      - "traefik.http.routers.store-frontend.entrypoints=websecure"
+      - "traefik.http.routers.store-frontend.tls.certresolver=myresolver"
+      - "com.centurylinklabs.watchtower.enable=true"
+    restart: always
+    networks:
+      - store
+    environment:
+      - NEXT_PUBLIC_BACKEND_HOST=http://store:8080/
+      - NEXT_PUBLIC_FRONTEND_HOST='https://fmcshops.com/'
+
   store:
       image: ghcr.io/ahmadbsat/menuproject-backend:production
       labels:

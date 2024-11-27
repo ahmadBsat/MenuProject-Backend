@@ -8,6 +8,7 @@ export const StoreBranchSchema = new mongoose.Schema(
       ref: "Store",
     },
     name: { type: String, required: true },
+    address: { type: String, default: "" },
     phone_number: { type: String, required: true },
   },
   { timestamps: true }
