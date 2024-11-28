@@ -37,6 +37,7 @@ export const getStoreByDomain = async (
 ) => {
   try {
     const { domain } = req.params;
+    const currency = req.get("x-currency-id");
 
     if (!domain) {
       return res.status(400).json({ message: ERRORS.STORE_ID_REQUIRED });

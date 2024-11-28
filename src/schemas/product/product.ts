@@ -4,7 +4,7 @@ export const AdditionSchema = new mongoose.Schema(
   {
     group: { type: String, required: true },
     name: { type: String, required: true },
-    item: [
+    items: [
       {
         type: mongoose.Schema.Types.ObjectId,
         required: true,

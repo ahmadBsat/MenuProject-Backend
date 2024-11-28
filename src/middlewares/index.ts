@@ -23,7 +23,10 @@ export const isAuthenticated = async (
 
     const token = sessionToken.split(" ")[1];
     const decodedToken = decodeJWT(token);
-    const current_user = await UserModel.findById(decodedToken._id).lean();
+    const current_user = await UserModel.findOne({
+      _id: decodedToken._id,
+      is_active: true,
+    }).lean();
 
     if (!current_user) {
       return res.status(403).json({ message: ERRORS.NO_AUTH });
