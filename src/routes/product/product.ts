@@ -20,7 +20,7 @@ export default (router: express.Router) => {
     getProductsByStoreId
   );
 
-  router.post("/api/v1/products/:id", isAuthenticated, createStoreProduct);
+  router.post("/api/v1/products", isAuthenticated, createStoreProduct);
 
   router.patch("/api/v1/products/:id", isAuthenticated, updateStoreProduct);
 

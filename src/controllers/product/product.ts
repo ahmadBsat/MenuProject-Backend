@@ -84,7 +84,7 @@ export const getProductById = async (
       return res.status(404).json({ message: ERRORS.NO_USER_STORE });
     }
 
-    const product = await ProductModel.find({
+    const product = await ProductModel.findOne({
       _id: id,
       store: store._id,
     }).lean();
@@ -101,7 +101,7 @@ export const createStoreProduct = async (
   res: express.Response
 ) => {
   try {
-    const { data } = req.body;
+    const data = req.body;
     const user = res.locals.user as User;
 
     const store = await StoreModel.findOne({ owner: user._id }).lean();
@@ -110,7 +110,7 @@ export const createStoreProduct = async (
       return res.status(404).json({ message: ERRORS.NO_USER_STORE });
     }
 
-    await ProductModel.create({ ...data });
+    await ProductModel.create({ ...data, store: store._id });
 
     return res.status(200).json(success_msg("Product created")).end();
   } catch (error) {
@@ -124,7 +124,7 @@ export const updateStoreProduct = async (
   res: express.Response
 ) => {
   try {
-    const { data } = req.body;
+    const data = req.body;
     const { id } = req.params;
     const user = res.locals.user as User;
 

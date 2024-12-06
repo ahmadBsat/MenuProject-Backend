@@ -3,8 +3,6 @@ import { User } from "../../types/user";
 import { Logger } from "../../entities/logger";
 import { ERRORS } from "../../constant/errors";
 import { StoreModel } from "../../schemas/store/store";
-import { ProductModel } from "../../schemas/product/product";
-import { ProductItemModel } from "../../schemas/product/product_item";
 import { StoreBranchModel } from "../../schemas/store/store_branch";
 import { calculate_pages, handleParams, success_msg } from "../../utils/common";
 
@@ -77,10 +75,17 @@ export const createStoreBranch = async (
 ) => {
   try {
     const data = req.body;
+    const user = res.locals.user as User;
 
-    await StoreModel.create({ ...data });
+    const store = await StoreModel.findOne({ owner: user._id }).lean();
 
-    return res.status(200).json(success_msg("Store created")).end();
+    if (!store) {
+      return res.status(404).json({ message: ERRORS.NO_USER_STORE });
+    }
+
+    await StoreBranchModel.create({ ...data, store: store._id });
+
+    return res.status(200).json(success_msg("Store branch created")).end();
   } catch (error) {
     Logger.error(error);
     return res.status(406).send({ message: error.message || ERRORS.SERVER });
@@ -92,20 +97,28 @@ export const updateStoreBranch = async (
   res: express.Response
 ) => {
   try {
-    const data = req.body;
     const { id } = req.params;
+
+    const data = req.body;
+    const user = res.locals.user as User;
 
     if (!id) {
       return res.status(400).json({ message: ERRORS.STORE_ID_REQUIRED });
     }
 
-    await StoreModel.updateOne(
-      { _id: id },
-      { $set: { ...data } },
+    const store = await StoreModel.findOne({ owner: user._id }).lean();
+
+    if (!store) {
+      return res.status(404).json({ message: ERRORS.NO_USER_STORE });
+    }
+
+    await StoreBranchModel.updateOne(
+      { _id: id, store: store._id },
+      { $set: { ...data, store: store._id } },
       { upsert: true }
     );
 
-    return res.status(200).json(success_msg("Store updated")).end();
+    return res.status(200).json(success_msg("Store branch updated")).end();
   } catch (error) {
     Logger.error(error);
     return res.status(406).send({ message: error.message || ERRORS.SERVER });
@@ -118,21 +131,21 @@ export const deleteStoreBranch = async (
 ) => {
   try {
     const { id } = req.params;
+    const user = res.locals.user as User;
 
     if (!id) {
       return res.status(400).json({ message: ERRORS.STORE_ID_REQUIRED });
     }
 
-    const store = await StoreModel.findOneAndDelete({ _id: id }).lean();
-    const products = await ProductModel.find({ store: store._id })
-      .distinct("_id")
-      .lean();
+    const store = await StoreModel.findOne({ owner: user._id }).lean();
 
-    await StoreBranchModel.deleteMany({ store: store._id });
-    await ProductModel.deleteMany({ _id: { $in: products } });
-    await ProductItemModel.deleteMany({ product: { $in: products } });
+    if (!store) {
+      return res.status(404).json({ message: ERRORS.NO_USER_STORE });
+    }
 
-    return res.status(200).json(success_msg("Store updated")).end();
+    await StoreBranchModel.deleteOne({ _id: id, store: store._id });
+
+    return res.status(200).json(success_msg("Store branch deleted")).end();
   } catch (error) {
     Logger.error(error);
     return res.status(406).send({ message: error.message || ERRORS.SERVER });

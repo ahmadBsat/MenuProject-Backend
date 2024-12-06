@@ -8,4 +8,5 @@ export const ERRORS = {
   NO_AUTH: "Not Authenticated",
   NO_USER_STORE: "No store found for this user account",
   BRANCH_NOT_FOUND: "Branch not found",
+  NO_CATEGORY: "Category not found",
 };

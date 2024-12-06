@@ -12,6 +12,8 @@ services:
     restart: always
     networks:
       - store
+    env_file:
+        - .env
     environment:
       - NEXT_PUBLIC_BACKEND_HOST=http://store:8080/
       - NEXT_PUBLIC_FRONTEND_HOST='https://fmcshops.com/'

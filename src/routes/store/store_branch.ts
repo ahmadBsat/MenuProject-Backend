@@ -11,10 +11,7 @@ import {
 export default (router: express.Router) => {
   router.get("/api/v1/branches", isAuthenticated, getStoreBranches);
   router.get("/api/v1/branches/:id", isAuthenticated, getBranchById);
-
   router.post("/api/v1/branches", isAuthenticated, createStoreBranch);
-
   router.patch("/api/v1/branches/:id", isAuthenticated, updateStoreBranch);
-
-  router.delete("/api/v1/branches", isAuthenticated, deleteStoreBranch);
+  router.delete("/api/v1/branches/:id", isAuthenticated, deleteStoreBranch);
 };

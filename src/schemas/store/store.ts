@@ -7,7 +7,7 @@ export const StoreSchema = new mongoose.Schema(
       required: true,
       ref: "User",
     },
-    logo: { type: String, required: true },
+    logo: { type: String, default: "" },
     name: { type: String, required: true },
     domain: { type: String, required: true },
     palette: { type: String, required: false, default: "" },
