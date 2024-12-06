@@ -6,7 +6,7 @@ import { delete_file, upload_files } from "../controllers/upload";
 export default (router: express.Router) => {
   router.post(
     "/api/v1/upload",
-    uploadMutler.array("files", 1),
+    uploadMutler.array("files", 8),
     isAuthenticated,
     upload_files
   );
