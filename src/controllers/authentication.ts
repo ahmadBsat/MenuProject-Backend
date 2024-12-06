@@ -45,8 +45,7 @@ export const register = async (req: express.Request, res: express.Response) => {
     });
 
     const token = generateUserToken(user._id.toString());
-    const { authentication, is_active, is_archived, is_super_admin, ...rest } =
-      user.toJSON();
+    const { authentication, is_active, is_archived, ...rest } = user.toJSON();
 
     await session.commitTransaction();
 
@@ -101,8 +100,7 @@ export const login = async (req: express.Request, res: express.Response) => {
     const user_id = user._id.toString();
     const token = generateUserToken(user_id);
 
-    const { authentication, is_active, is_archived, is_super_admin, ...rest } =
-      user;
+    const { authentication, is_active, is_archived, ...rest } = user;
 
     return res.status(200).json({ user: rest, token }).end();
   } catch (error) {
