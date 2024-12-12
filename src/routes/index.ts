@@ -7,6 +7,7 @@ import product from "./product/product";
 import store_branch from "./store/store_branch";
 import user from "./user";
 import category from "./category";
+import currency from "./currency";
 
 const router = express.Router();
 
@@ -19,6 +20,7 @@ export default (): express.Router => {
   product(router);
   category(router);
   user(router);
+  currency(router);
 
   return router;
 };
