@@ -5,17 +5,16 @@ import { Logger } from "../entities/logger";
 import { CartModel } from "../schemas/cart";
 import { getCartData, isSimilar, remove_cart_item } from "../helpers/cart";
 
-const store = "";
-
 export const get_cart = async (req: express.Request, res: express.Response) => {
   try {
     const session_id = req.cookies["session_id"];
+    const { store } = req.params;
 
     if (!session_id) {
-      return await handleNewSession(req, res);
+      return await handleNewSession(req, res, store);
     }
 
-    return await handleExistingSession(req, res);
+    return await handleExistingSession(req, res, store);
   } catch (error) {
     Logger.error(error);
     return res.status(406).send({ message: error.message || ERRORS.SERVER });
@@ -27,7 +26,7 @@ export const add_to_cart = async (
   res: express.Response
 ) => {
   try {
-    const { product } = req.body;
+    const { product, store } = req.body;
     const currency = req.get("x-currency-id");
     const session_id = req.cookies["session_id"];
 
@@ -38,8 +37,7 @@ export const add_to_cart = async (
         .end();
     }
 
-    const filter = { session_id: session_id };
-    const cart = await CartModel.findOne(filter).lean();
+    const cart = await CartModel.findOne({ session_id }).lean();
 
     if (!cart) {
       return res.status(404).json({ message: "Cart not found" }).end();
@@ -49,7 +47,7 @@ export const add_to_cart = async (
 
     const products = cart.products.map((item) => {
       const is_included =
-        item.id.toString() === product.id &&
+        item.product_id.toString() === product.product_id &&
         isSimilar(item.product_additions, product.product_additions);
 
       if (is_included) {
@@ -73,11 +71,12 @@ export const add_to_cart = async (
       { new: true }
     ).lean();
 
-    const { _id, session_id: removedId, ...rest } = updatedCart;
+    const { _id, ...rest } = updatedCart;
     const cartData = await getCartData(updatedCart, currency, store);
 
     return res.status(200).json({ ...rest, ...cartData });
   } catch (error) {
+    console.log(error);
     Logger.error(error);
     return res.status(406).send({ message: error.message || ERRORS.SERVER });
   }
@@ -90,7 +89,7 @@ export const delete_from_cart = async (
   try {
     const currency = req.get("x-currency-id");
     const session_id = req.cookies["session_id"];
-    const { product_id, options } = req.body;
+    const { product_id, options, store } = req.body;
 
     if (!product_id) {
       return res.status(400).json({ message: "Missing product id" }).end();
@@ -129,7 +128,8 @@ export const delete_from_cart = async (
 
 const handleNewSession = async (
   req: express.Request,
-  res: express.Response
+  res: express.Response,
+  store: string
 ) => {
   const userSession = v4();
   const currency = req.get("x-currency-id");
@@ -156,7 +156,8 @@ const handleNewSession = async (
 
 const handleExistingSession = async (
   req: express.Request,
-  res: express.Response
+  res: express.Response,
+  store: string
 ) => {
   const currency = req.get("x-currency-id");
   const session_id = req.cookies["session_id"];
@@ -165,7 +166,7 @@ const handleExistingSession = async (
   const cart = await CartModel.findOne(filter).lean();
 
   if (!cart) {
-    return await handleNewSession(req, res);
+    return await handleNewSession(req, res, store);
   }
 
   const { _id, session_id: removedId, ...rest } = cart;

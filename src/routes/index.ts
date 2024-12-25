@@ -9,6 +9,7 @@ import user from "./user";
 import category from "./category";
 import currency from "./currency";
 import product_items from "./product/product_items";
+import cart from "./cart";
 
 const router = express.Router();
 
@@ -23,6 +24,7 @@ export default (): express.Router => {
   category(router);
   user(router);
   currency(router);
+  cart(router);
 
   return router;
 };

@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 import { parseURL } from "whatwg-url";
-import { Product } from "../types/product";
+import { Product, ProductPopulated } from "../types/product";
 import { cloneDeep, isEmpty } from "lodash";
 import { CurrencyModel } from "../schemas/currency";
 
@@ -149,7 +149,10 @@ export const generateSlug = (slug: string) => {
   return `${slug}-${Math.random().toString(36).substring(2, 9)}`;
 };
 
-export const calculateFinalPrice = (product: Product, rate: number) => {
+export const calculateFinalPrice = (
+  product: Partial<Product>,
+  rate: number
+) => {
   // Clone the product to avoid mutating the original object
   let updated_product = cloneDeep(product);
   let old_price = cloneDeep(product.price * rate);

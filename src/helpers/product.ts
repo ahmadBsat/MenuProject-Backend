@@ -12,14 +12,19 @@ export const handleProducts = async ({
 }) => {
   const products = await ProductModel.aggregate<ProductPopulated>(pipeline);
 
-  const products_data: Omit<
-    ProductPopulated,
-    "is_active" | "createdAt" | "updatedAt"
-  >[] = products.map((product) => {
+  const products_data: any[] = products.map((product) => {
     const updated_product = calculateFinalPrice(product, rate);
-    const { createdAt, updatedAt, is_active, ...rest } = updated_product;
+    const {
+      createdAt,
+      updatedAt,
+      is_active,
+      category,
+      branch,
+      store,
+      ...rest
+    } = updated_product;
 
-    return { ...rest, additions: [] };
+    return { ...rest };
   });
 
   return { products: products_data };

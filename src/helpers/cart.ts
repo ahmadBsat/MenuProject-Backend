@@ -3,6 +3,16 @@ import { cloneDeep } from "lodash";
 import { handleProducts } from "./product";
 import { Cart, CartItem } from "../types/user";
 import { getCurrencyRate } from "../utils/common";
+import { Product, ProductAddition } from "../types/product";
+
+type ProductWithAddition = Product & {
+  additions: {
+    name: string;
+    group: string;
+    is_multiple: boolean;
+    items: ProductAddition[];
+  }[];
+};
 
 export const remove_cart_item = (
   products: CartItem[],
@@ -61,56 +71,113 @@ export const getCartData = async (
   currency: string,
   store: string
 ) => {
-  const rate = await getCurrencyRate(currency, store);
-  const product_ids = cart.products.map((p) => p.product_id.toString());
+  try {
+    const rate = await getCurrencyRate(currency, store);
+    const product_ids = cart.products.map((p) => p.product_id);
 
-  const { products } = await handleProducts({
-    rate,
-    pipeline: [{ $match: { _id: { $in: product_ids }, is_active: true } }],
-  });
-
-  let total_price = 0;
-
-  const cart_details = cart.products.map((cart_product) => {
-    const product_data = cloneDeep(
-      products.find((p: any) => p._id.toString() === cart_product.id.toString())
-    );
-
-    // Calculate price based on quantity and additional prices from options
-    let product_price = cloneDeep(product_data.price);
-    let additional_prices = cloneDeep(0);
-
-    cart_product.product_additions.forEach((addition) => {
-      const selected_additions = product_data.additions.filter(
-        (ad) => ad._id.toString() === addition.toString()
-      )[0];
-
-      const addition_with_rate = rate * selected_additions.additional_price;
-      const position = product_data.additions.findIndex(
-        (x) => x._id.toString() === addition.toString()
-      );
-
-      product_data.additions[position].additional_price =
-        rate * selected_additions.additional_price;
-
-      additional_prices += addition_with_rate * cart_product.quantity;
+    const data = await handleProducts({
+      rate,
+      pipeline: [
+        { $match: { _id: { $in: product_ids }, is_active: true } },
+        {
+          $lookup: {
+            from: "productitems",
+            localField: "additions.items",
+            foreignField: "_id",
+            as: "populated_items",
+          },
+        },
+        {
+          $addFields: {
+            "additions.items": "$populated_items",
+          },
+        },
+        {
+          $project: {
+            populated_items: 0,
+          },
+        },
+      ],
     });
 
-    total_price += product_price * cart_product.quantity + additional_prices;
+    let total_price = 0;
+    const products = data.products as any as ProductWithAddition[];
 
-    //update with the variant price and their qty
-    product_data.price =
-      product_price * cart_product.quantity + additional_prices;
+    const cart_details = cart.products.map((cart_product) => {
+      const product_data = cloneDeep(
+        products.find(
+          (p) => p._id.toString() === cart_product.product_id.toString()
+        )
+      );
+
+      // Calculate price based on quantity and additional prices from options
+      let product_price = cloneDeep(product_data.price);
+      let additional_prices = cloneDeep(0);
+
+      cart_product.product_additions.forEach((addition_item) => {
+        const selected_additions_item = find_item_by_id(
+          product_data.additions,
+          addition_item.toString()
+        );
+
+        const addition_with_rate =
+          rate * selected_additions_item.additional_price;
+
+        let position = null;
+        let position_addition = 0;
+        for (const addition of product_data.additions) {
+          position = addition.items.findIndex(
+            (x) => x._id.toString() === addition_item.toString()
+          );
+
+          if (position !== -1) break;
+
+          position_addition++;
+        }
+
+        product_data.additions[position_addition].items[
+          position
+        ].additional_price = rate * selected_additions_item.additional_price;
+
+        additional_prices += addition_with_rate * cart_product.quantity;
+      });
+
+      total_price += product_price * cart_product.quantity + additional_prices;
+
+      //update with the variant price and their qty
+      product_data.price =
+        product_price * cart_product.quantity + additional_prices;
+
+      return {
+        ...product_data,
+        quantity: cart_product.quantity,
+      };
+    });
 
     return {
-      ...product_data,
-      quantity: cart_product.quantity,
+      products: cart_details,
+      count: cart.products.length,
+      total_price: Number(total_price),
     };
-  });
+  } catch (error) {
+    console.log(error);
+  }
+};
 
-  return {
-    products: cart_details,
-    count: cart.products.length,
-    total_price: Number(total_price.toFixed(2)),
-  };
+const find_item_by_id = (
+  additions: {
+    name: string;
+    group: string;
+    is_multiple: boolean;
+    items: ProductAddition[];
+  }[],
+  item_id: string
+) => {
+  for (const addition of additions) {
+    const item = addition.items.find((item) => item._id.toString() === item_id);
+    if (item) {
+      return item;
+    }
+  }
+  return null; // Return null if the item is not found
 };

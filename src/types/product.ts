@@ -15,4 +15,5 @@ export type ProductPopulated = {
     ProductAddition,
     "_id" | "name" | "image" | "additional_price"
   >[];
-} & Product;
+  old_price?: number;
+} & Omit<Product, "createdAt" | "updatedAt">;
