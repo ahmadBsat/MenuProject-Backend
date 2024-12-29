@@ -37,7 +37,7 @@ export const add_to_cart = async (
         .end();
     }
 
-    const cart = await CartModel.findOne({ session_id }).lean();
+    const cart = await CartModel.findOne({ session_id, store }).lean();
 
     if (!cart) {
       return res.status(404).json({ message: "Cart not found" }).end();
@@ -126,6 +126,47 @@ export const delete_from_cart = async (
   }
 };
 
+export const reset_cart = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const { store } = req.body;
+    const currency = req.get("x-currency-id");
+    const session_id = req.cookies["session_id"];
+
+    if (!session_id) {
+      return res
+        .status(400)
+        .json({ message: "Please login to add to you're cart" })
+        .end();
+    }
+
+    const cart = await CartModel.findOne({ session_id, store }).lean();
+
+    if (!cart) {
+      return res.status(404).json({ message: "Cart not found" }).end();
+    }
+
+    const updatedCart = await CartModel.findByIdAndUpdate(
+      cart._id,
+      {
+        products: [],
+      },
+      { new: true }
+    ).lean();
+
+    const { _id, ...rest } = updatedCart;
+    const cartData = await getCartData(updatedCart, currency, store);
+
+    return res.status(200).json({ ...rest, ...cartData });
+  } catch (error) {
+    console.log(error);
+    Logger.error(error);
+    return res.status(406).send({ message: error.message || ERRORS.SERVER });
+  }
+};
+
 const handleNewSession = async (
   req: express.Request,
   res: express.Response,
@@ -137,6 +178,7 @@ const handleNewSession = async (
   const cart = await CartModel.create({
     session_id: userSession,
     products: [],
+    store,
   });
 
   const { _id, session_id, ...rest } = cart.toJSON();
@@ -162,7 +204,7 @@ const handleExistingSession = async (
   const currency = req.get("x-currency-id");
   const session_id = req.cookies["session_id"];
 
-  const filter = { session_id: session_id };
+  const filter = { session_id: session_id, store };
   const cart = await CartModel.findOne(filter).lean();
 
   if (!cart) {

@@ -22,6 +22,11 @@ export const CartItemSchema = new mongoose.Schema(
 export const CartSchema = new mongoose.Schema(
   {
     session_id: { type: String, required: true },
+    store: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "Store",
+    },
     products: [CartItemSchema],
   },
   { timestamps: true }

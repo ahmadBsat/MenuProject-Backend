@@ -1,4 +1,4 @@
-name: Agent CI/CD
+name: Store CI/CD
 
 on:
   push:

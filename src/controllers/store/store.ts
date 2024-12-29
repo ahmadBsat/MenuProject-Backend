@@ -15,6 +15,9 @@ import {
 import { ObjectId } from "mongodb";
 import { Types } from "mongoose";
 import { ProductPopulated } from "../../types/product";
+import { CurrencyModel } from "../../schemas/currency";
+import { CategoryModel } from "../../schemas/category";
+import { CartModel } from "../../schemas/cart";
 
 type StorePopulated = {
   _id: Types.ObjectId;
@@ -347,6 +350,9 @@ export const deleteStoreAdmin = async (
     await StoreBranchModel.deleteMany({ store: store._id });
     await ProductModel.deleteMany({ _id: { $in: products } });
     await ProductItemModel.deleteMany({ product: { $in: products } });
+    await CurrencyModel.deleteMany({ store: store._id });
+    await CategoryModel.deleteMany({ store: store._id });
+    await CartModel.deleteMany({ store: store._id });
 
     return res.status(200).json(success_msg("Store updated")).end();
   } catch (error) {
