@@ -11,9 +11,12 @@ export type ProductAddition = InferSchemaType<typeof ProductItemSchema> & {
 };
 
 export type ProductPopulated = {
-  additions: Pick<
-    ProductAddition,
-    "_id" | "name" | "image" | "additional_price"
-  >[];
+  additions: {
+    group: string;
+    items: Pick<
+      ProductAddition,
+      "_id" | "name" | "image" | "additional_price"
+    >[];
+  };
   old_price?: number;
 } & Omit<Product, "createdAt" | "updatedAt">;

@@ -161,3 +161,14 @@ export const calculateFinalPrice = (
 
   return { ...updated_product, old_price };
 };
+
+export const map_product_items = (
+  ids: string[] | Types.ObjectId[],
+  objects: { _id: string; [key: string]: any }[]
+): { _id: string; [key: string]: any }[] => {
+  return ids
+    .map((id) => {
+      return objects.find((object) => object._id.toString() === id.toString());
+    })
+    .filter((item) => item !== null && item !== undefined);
+};

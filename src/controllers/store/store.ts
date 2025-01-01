@@ -10,6 +10,7 @@ import {
   calculate_pages,
   getCurrencyRate,
   handleParams,
+  map_product_items,
   success_msg,
 } from "../../utils/common";
 import { ObjectId } from "mongodb";
@@ -39,6 +40,7 @@ type StorePopulated = {
   products: ProductPopulated[];
   currencies: { name: string }[];
   categories: [];
+  populated_items: any[];
 };
 
 export const getAllStores = async (
@@ -170,10 +172,8 @@ export const getStoreByDomain = async (
                 localField: "additions.items",
                 foreignField: "_id",
                 as: "populated_items",
-                // pipeline: [{ $project: { name: 1, _id: 1 } }],
               },
             },
-            { $addFields: { "additions.items": "$populated_items" } },
           ],
         },
       },
@@ -186,16 +186,25 @@ export const getStoreByDomain = async (
           renewal_date: 0,
           renewal_cost: 0,
           domain: 0,
-          populated_items: 0,
         },
       },
     ]);
 
     const rate = await getCurrencyRate(currency, store[0]._id);
 
-    const result = store[0];
-    result.products = result.products.map((p) => {
-      return { ...p, price: p.price * rate };
+    const result: any = store[0];
+
+    result.products = result.products.map((p: any) => {
+      return {
+        ...p,
+        price: p.price * rate,
+        additions: p.additions.map((a: any) => {
+          return {
+            ...a,
+            items: map_product_items(a.items, p.populated_items),
+          };
+        }),
+      };
     });
 
     return res.status(200).json(result).end();

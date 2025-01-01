@@ -2,7 +2,7 @@ import { Types } from "mongoose";
 import { cloneDeep } from "lodash";
 import { handleProducts } from "./product";
 import { Cart, CartItem } from "../types/user";
-import { getCurrencyRate } from "../utils/common";
+import { getCurrencyRate, map_product_items } from "../utils/common";
 import { Product, ProductAddition } from "../types/product";
 
 type ProductWithAddition = Product & {
@@ -12,6 +12,7 @@ type ProductWithAddition = Product & {
     is_multiple: boolean;
     items: ProductAddition[];
   }[];
+  populated_items: any[];
 };
 
 export const remove_cart_item = (
@@ -87,28 +88,39 @@ export const getCartData = async (
             as: "populated_items",
           },
         },
-        {
-          $addFields: {
-            "additions.items": "$populated_items",
-          },
-        },
-        {
-          $project: {
-            populated_items: 0,
-          },
-        },
       ],
     });
 
     let total_price = 0;
-    const products = data.products as any as ProductWithAddition[];
+    const temp = data.products as any as ProductWithAddition[];
+
+    const products = temp.map((p) => {
+      return {
+        ...p,
+        additions: p.additions.map((a: any) => {
+          return {
+            ...a,
+            items: map_product_items(a.items, p.populated_items),
+          };
+        }),
+      };
+    });
 
     const cart_details = cart.products.map((cart_product) => {
-      const product_data = cloneDeep(
+      let product_data = cloneDeep(
         products.find(
           (p) => p._id.toString() === cart_product.product_id.toString()
         )
       );
+
+      const cart_additions = product_data.additions.map((a) => {
+        return {
+          ...a,
+          items: map_product_items(cart_product.product_additions, a.items),
+        };
+      });
+
+      product_data.additions = cart_additions;
 
       // Calculate price based on quantity and additional prices from options
       let product_price = cloneDeep(product_data.price);
@@ -127,7 +139,7 @@ export const getCartData = async (
         let position_addition = 0;
         for (const addition of product_data.additions) {
           position = addition.items.findIndex(
-            (x) => x._id.toString() === addition_item.toString()
+            (x: any) => x._id.toString() === addition_item.toString()
           );
 
           if (position !== -1) break;
