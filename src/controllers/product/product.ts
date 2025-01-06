@@ -110,6 +110,12 @@ export const createStoreProduct = async (
       return res.status(404).json({ message: ERRORS.NO_USER_STORE });
     }
 
+    const { category } = data;
+
+    if (!category || category.length === 0) {
+      return res.status(400).json({ message: "Category is required" });
+    }
+
     await ProductModel.create({ ...data, store: store._id });
 
     return res.status(200).json(success_msg("Product created")).end();
@@ -132,6 +138,12 @@ export const updateStoreProduct = async (
 
     if (!store) {
       return res.status(404).json({ message: ERRORS.NO_USER_STORE });
+    }
+
+    const { category } = data;
+
+    if (!category || category.length === 0) {
+      return res.status(400).json({ message: "Category is required" });
     }
 
     await ProductModel.updateOne(
