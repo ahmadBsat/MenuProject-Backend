@@ -20,18 +20,26 @@ export const remove_cart_item = (
   product_id: string,
   product_additions?: Types.ObjectId[]
 ): CartItem[] => {
-  return products.filter((product) => {
-    // Check if product IDs match
-    const isIdMatch = product.product_id.toString() === product_id;
+  return products
+    .map((product) => {
+      // Check if product IDs match
+      const isIdMatch = product.product_id.toString() === product_id;
 
-    // Check if options match (only if options are provided)
-    const isOptionsMatch = product_additions
-      ? isSimilar(product.product_additions, product_additions)
-      : true;
+      // Check if options match (only if options are provided)
+      const isOptionsMatch = product_additions
+        ? isSimilar(product.product_additions, product_additions)
+        : true;
 
-    // Keep the product only if it does not match both ID and options
-    return !(isIdMatch && isOptionsMatch);
-  });
+      if (isIdMatch && isOptionsMatch) {
+        if (product.quantity === 1) return null;
+
+        product.quantity = product.quantity - 1;
+      }
+
+      // Keep the product only if it does not match both ID and options
+      return product;
+    })
+    .filter((p) => p !== null);
 };
 
 /**
