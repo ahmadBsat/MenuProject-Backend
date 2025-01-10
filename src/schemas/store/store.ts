@@ -22,6 +22,7 @@ export const StoreSchema = new mongoose.Schema(
     background_image: { type: String, required: false, default: "" },
     renewal_date: { type: Date, required: false },
     renewal_cost: { type: Number, required: true },
+    watermark: { type: Boolean, default: true },
     is_active: { type: Boolean, default: true },
   },
   { timestamps: true }
