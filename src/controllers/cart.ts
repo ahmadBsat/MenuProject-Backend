@@ -33,7 +33,7 @@ export const add_to_cart = async (
     if (!session_id) {
       return res
         .status(400)
-        .json({ message: "Please login to add to you're cart" })
+        .json({ message: "Please login to add to your cart" })
         .end();
     }
 

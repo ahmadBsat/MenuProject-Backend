@@ -85,9 +85,23 @@ export const updateUserById = async (
       return res.status(400).json({ message: "User ID is required" });
     }
 
+    const user = await UserModel.findOne({ _id: id });
+
+    if (!user) {
+      return res.status(400).json({ message: "No User found" });
+    }
+
+    if (data.password) {
+      user.authentication.password = await hashAuthentication(data.password);
+
+      await user.save();
+    }
+
+    const { authentication, ...rest } = data;
+
     await UserModel.updateOne(
       { _id: id },
-      { $set: { ...data } },
+      { $set: { ...rest } },
       { upsert: true }
     ).lean();
 

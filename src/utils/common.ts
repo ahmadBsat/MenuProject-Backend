@@ -172,3 +172,22 @@ export const map_product_items = (
     })
     .filter((item) => item !== null && item !== undefined);
 };
+
+export const map_product_items_convert_additional = (
+  ids: string[] | Types.ObjectId[],
+  objects: { _id: string; additional_price?: number; [key: string]: any }[],
+  rate: number,
+): { _id: string; [key: string]: any }[] => {
+  return ids
+    .map((id) => {
+      const foundObject = objects.find((object) => object._id.toString() === id.toString());
+      if (foundObject) {
+        if (foundObject.additional_price !== undefined) {
+          foundObject.additional_price *= rate;
+        }
+        return foundObject;
+      }
+      return null;
+    })
+    .filter((item) => item !== null && item !== undefined);
+};

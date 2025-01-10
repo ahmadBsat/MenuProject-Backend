@@ -10,7 +10,7 @@ import {
   calculate_pages,
   getCurrencyRate,
   handleParams,
-  map_product_items,
+  map_product_items_convert_additional,
   success_msg,
 } from "../../utils/common";
 import { ObjectId } from "mongodb";
@@ -79,7 +79,10 @@ export const getStoreByDomain = async (
       return res.status(400).json({ message: ERRORS.STORE_ID_REQUIRED });
     }
 
-    const store_check = await StoreModel.findOne({ domain }).lean();
+    const store_check = await StoreModel.findOne({
+      domain,
+      is_active: true,
+    }).lean();
 
     if (!store_check) {
       return res.status(404).json({ message: "Store not found" });
@@ -201,7 +204,11 @@ export const getStoreByDomain = async (
         additions: p.additions.map((a: any) => {
           return {
             ...a,
-            items: map_product_items(a.items, p.populated_items),
+            items: map_product_items_convert_additional(
+              a.items,
+              p.populated_items,
+              rate
+            ),
           };
         }),
       };

@@ -83,7 +83,7 @@ export const login = async (req: express.Request, res: express.Response) => {
     }
 
     if (!user.is_active) {
-      return res.status(401).json({ message: "Account activation pending" });
+      return res.status(401).json({ message: "Account not activated" });
     }
 
     const isCorrectPassword = await compareHashedPassword(
