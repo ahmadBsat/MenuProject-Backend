@@ -15,6 +15,7 @@ export const CartItemSchema = new mongoose.Schema(
       },
     ],
     quantity: { type: Number, required: true },
+    instructions: { type: String, required: false, default: "" },
   },
   { _id: false }
 );

@@ -170,6 +170,7 @@ export const getCartData = async (
 
       return {
         ...product_data,
+        instructions: cart_product.instructions || "",
         quantity: cart_product.quantity,
       };
     });

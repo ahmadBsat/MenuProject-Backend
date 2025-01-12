@@ -126,6 +126,40 @@ export const delete_from_cart = async (
   }
 };
 
+export const update_cart_products = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  try {
+    const currency = req.get("x-currency-id");
+    const session_id = req.cookies["session_id"];
+
+    const { index, instructions, store } = req.body;
+
+    if (!session_id) {
+      return res.status(400).json({ message: "Missing token" }).end();
+    }
+
+    const filter = { session_id: session_id };
+    const cart = await CartModel.findOne(filter);
+
+    if (!cart) {
+      return res.status(404).json({ message: "Cart not found" }).end();
+    }
+
+    cart.products[index].instructions = instructions || "";
+    await cart.save();
+
+    const { _id, session_id: removedId, ...rest } = cart.toJSON();
+    const cartData = await getCartData(cart, currency, store);
+
+    return res.status(200).json({ ...rest, ...cartData });
+  } catch (error) {
+    Logger.error(error);
+    return res.status(406).send({ message: error.message || ERRORS.SERVER });
+  }
+};
+
 export const reset_cart = async (
   req: express.Request,
   res: express.Response
