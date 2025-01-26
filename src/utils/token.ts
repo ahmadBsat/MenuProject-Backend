@@ -1,10 +1,10 @@
-import jwt, { JsonWebTokenError } from "jsonwebtoken";
+import jwt, { JsonWebTokenError, Secret } from "jsonwebtoken";
 import * as dotenv from "dotenv";
 import { DecodedJWT } from "../types/JWT";
 
 dotenv.config();
 
-const secret = process.env.JWT_SECRET;
+const secret: Secret = process.env.JWT_SECRET;
 
 export const decodeJWT = (token: string) => {
   try {
@@ -39,7 +39,7 @@ export const generateUserToken = (
   }
 
   const verificationToken = jwt.sign(temp, secret, {
-    issuer: "Sidekick",
+    issuer: "FMCToken",
     expiresIn: "30d",
   });
 
