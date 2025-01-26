@@ -19,10 +19,10 @@ export const decodeJWT = (token: string) => {
 
 export const generateVerificationToken = (
   data: Record<string, any>,
-  expire = "7d"
+  expire: string | number = "7d"
 ) => {
   const verificationToken = jwt.sign(data, secret, {
-    expiresIn: expire,
+    expiresIn: "7d",
   });
 
   return verificationToken;
