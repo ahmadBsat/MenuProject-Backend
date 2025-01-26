@@ -14,6 +14,7 @@ const aws_access_key_id = process.env.AWS_ACCESS_KEY_ID;
 const aws_secret_access_key = process.env.AWS_SECRET_ACCESS_KEY;
 const aws_region = process.env.AWS_REGION;
 const s3_bucket_name = process.env.S3_BUCKET_NAME;
+const aws_endpoint = process.env.AWS_ENDPOINT;
 
 export const s3 = new S3Client({
   credentials: {
@@ -22,6 +23,7 @@ export const s3 = new S3Client({
   },
   maxAttempts: 10,
   region: aws_region,
+  endpoint: aws_endpoint,
 });
 
 export const uploadFile = async (
@@ -64,8 +66,12 @@ export const generateFileName = (bytes = 32) => {
   return crypto.randomBytes(bytes).toString("hex");
 };
 
+// export const generateFileURL = (key: string, version: string) => {
+//   return `https://${s3_bucket_name}.s3.${aws_region}.amazonaws.com/${key}?versionId=${version}`;
+// };
+
 export const generateFileURL = (key: string, version: string) => {
-  return `https://${s3_bucket_name}.s3.${aws_region}.amazonaws.com/${key}?versionId=${version}`;
+  return `https://${s3_bucket_name}.${aws_region}.your-objectstorage.com/${key}`;
 };
 
 export const handleUpload = async (
