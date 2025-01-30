@@ -7,6 +7,7 @@ import product from "./product/product";
 import store_branch from "./store/store_branch";
 import user from "./user";
 import category from "./category";
+import banner from "./banner";
 import currency from "./currency";
 import product_items from "./product/product_items";
 import cart from "./cart";
@@ -25,6 +26,7 @@ export default (): express.Router => {
   user(router);
   currency(router);
   cart(router);
+  banner(router);
 
   return router;
 };

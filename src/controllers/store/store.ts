@@ -140,6 +140,22 @@ export const getStoreByDomain = async (
       },
       {
         $lookup: {
+          from: "banners",
+          localField: "_id",
+          foreignField: "store",
+          as: "banners",
+          pipeline: [
+            {
+              $match: {
+                is_active: true,
+                ...branch_check,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
           from: "products",
           localField: "_id",
           foreignField: "store",
