@@ -71,16 +71,17 @@ export const getStoreByDomain = async (
   res: express.Response
 ) => {
   try {
-    const { branch } = req.query;
-    const { domain } = req.params;
+    const { branch, domain } = req.query as Record<string, string>;
+    const origin = req.headers.origin;
     const currency = req.get("x-currency-id");
+    const is_default_domain = origin === process.env.CLIENT_URI;
 
-    if (!domain) {
+    if (!domain && is_default_domain) {
       return res.status(400).json({ message: ERRORS.STORE_ID_REQUIRED });
     }
 
     const store_check = await StoreModel.findOne({
-      domain,
+      $or: [{ custom_domain: origin }, { domain: domain }],
       is_active: true,
     }).lean();
 
@@ -101,7 +102,7 @@ export const getStoreByDomain = async (
     const store = await StoreModel.aggregate<StorePopulated>([
       {
         $match: {
-          domain: domain,
+          _id: store_check._id,
         },
       },
       {
@@ -232,7 +233,7 @@ export const getStoreByDomain = async (
 
     return res.status(200).json(result).end();
   } catch (error) {
-    Logger.error(error);
+    console.log(error);
     return res.status(406).send({ message: error.message || ERRORS.SERVER });
   }
 };
