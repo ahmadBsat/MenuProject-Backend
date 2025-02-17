@@ -27,6 +27,8 @@ export const StoreSchema = new mongoose.Schema(
     renewal_cost: { type: Number, required: true },
     watermark: { type: Boolean, default: true },
     logoDefault: { type: Boolean, default: true },
+    vat_exclusive: { type: Boolean, default: false },
+    vat_percentage: { type: Number, required: false },
     is_active: { type: Boolean, default: true },
   },
   { timestamps: true }
