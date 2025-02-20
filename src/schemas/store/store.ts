@@ -22,6 +22,7 @@ export const StoreSchema = new mongoose.Schema(
       checkout_background: { type: String, required: false, default: "white" },
       checkout_content: { type: String, required: false, default: "white" },
     },
+    settings: { display_pricing: { type: Boolean, default: true } },
     background_image: { type: String, required: false, default: "" },
     renewal_date: { type: Date, required: false },
     renewal_cost: { type: Number, required: true },
