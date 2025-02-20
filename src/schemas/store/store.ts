@@ -21,6 +21,8 @@ export const StoreSchema = new mongoose.Schema(
       primary: { type: String, required: false, default: "#a41f13" },
       checkout_background: { type: String, required: false, default: "white" },
       checkout_content: { type: String, required: false, default: "white" },
+      category_color:{ type: String, required: false, default: "white" },
+      category_background:{ type: String, required: false, default: "white" },
     },
     settings: { display_pricing: { type: Boolean, default: true } },
     background_image: { type: String, required: false, default: "" },
