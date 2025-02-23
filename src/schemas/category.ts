@@ -7,7 +7,7 @@ export const CategorySchema = new mongoose.Schema(
       required: true,
       ref: "Store",
     },
-    name: { type: String, unique: true, required: true, index: true },
+    name: { type: String, required: true },
     is_active: { type: Boolean, default: true },
   },
   { timestamps: true }
