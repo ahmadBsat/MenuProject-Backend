@@ -32,6 +32,7 @@ export const ProductSchema = new mongoose.Schema(
     ],
     name: { type: String, required: true },
     description: { type: String, required: false },
+    extra_information: { type: String, required: false },
     price: { type: Number, required: true },
     images: [{ type: String, required: true }],
     additions: [AdditionSchema],
