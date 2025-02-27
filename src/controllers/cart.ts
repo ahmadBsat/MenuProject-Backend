@@ -3,7 +3,12 @@ import express from "express";
 import { ERRORS } from "../constant/errors";
 import { Logger } from "../entities/logger";
 import { CartModel } from "../schemas/cart";
-import { getCartData, isSimilar, remove_cart_item } from "../helpers/cart";
+import {
+  getCartData,
+  isSimilar,
+  remove_cart_item,
+  setCookie,
+} from "../helpers/cart";
 
 export const get_cart = async (req: express.Request, res: express.Response) => {
   try {
@@ -218,14 +223,16 @@ const handleNewSession = async (
   const { _id, session_id, ...rest } = cart.toJSON();
   const cartData = await getCartData(cart, currency, store);
 
-  res.cookie("session_id", userSession, {
-    httpOnly: true,
-    secure: true,
-    path: "/",
-    sameSite: "none",
-    maxAge: 2147483647,
-    priority: "high",
-  });
+  // res.cookie("session_id", userSession, {
+  //   httpOnly: true,
+  //   secure: true,
+  //   path: "/",
+  //   sameSite: "none",
+  //   maxAge: 2147483647,
+  //   priority: "high",
+  // });
+
+  setCookie(userSession, res, req);
 
   return res.status(200).json({ ...rest, ...cartData });
 };

@@ -4,6 +4,7 @@ import { handleProducts } from "./product";
 import { Cart, CartItem } from "../types/user";
 import { getCurrencyRate, map_product_items } from "../utils/common";
 import { Product, ProductAddition } from "../types/product";
+import express from "express";
 
 type ProductWithAddition = Product & {
   additions: {
@@ -14,6 +15,16 @@ type ProductWithAddition = Product & {
   }[];
   populated_items: any[];
 };
+
+interface CookieOptions {
+  httpOnly: boolean;
+  secure: boolean;
+  path: string;
+  sameSite: "none";
+  maxAge: number;
+  priority: "high";
+  domain: string | null;
+}
 
 export const remove_cart_item = (
   products: CartItem[],
@@ -183,6 +194,31 @@ export const getCartData = async (
   } catch (error) {
     console.log(error);
   }
+};
+
+export const setCookie = (
+  session: string,
+  res: express.Response,
+  req: express.Request
+): void => {
+  let domain: string | null = null;
+  const host: string | undefined = req.headers.host;
+
+  if (host && host !== "fmcshops.com") {
+    domain = host;
+  }
+
+  const options: CookieOptions = {
+    httpOnly: true,
+    secure: true,
+    path: "/",
+    sameSite: "none",
+    maxAge: 2147483647,
+    priority: "high",
+    domain: domain,
+  };
+
+  res.cookie("session_id", session, options);
 };
 
 const find_item_by_id = (
