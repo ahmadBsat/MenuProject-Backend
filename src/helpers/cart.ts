@@ -204,6 +204,10 @@ export const setCookie = (
   let domain: string | null = null;
   const host: string | undefined = req.headers.host;
 
+  // if (host && host !== "fmcshops.com" && host.includes(".")) {
+  //   domain = "." + host.split(".").slice(-2).join("."); // Handle subdomains
+  // }
+
   if (host && host !== "fmcshops.com") {
     domain = host;
   }

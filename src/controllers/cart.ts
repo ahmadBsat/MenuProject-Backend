@@ -220,19 +220,19 @@ const handleNewSession = async (
     store,
   });
 
-  const { _id, session_id, ...rest } = cart.toJSON();
+  const { _id, ...rest } = cart.toJSON();
   const cartData = await getCartData(cart, currency, store);
 
-  // res.cookie("session_id", userSession, {
-  //   httpOnly: true,
-  //   secure: true,
-  //   path: "/",
-  //   sameSite: "none",
-  //   maxAge: 2147483647,
-  //   priority: "high",
-  // });
+  res.cookie("session_id", userSession, {
+    httpOnly: true,
+    secure: true,
+    path: "/",
+    sameSite: "none",
+    maxAge: 2147483647,
+    priority: "high",
+  });
 
-  setCookie(userSession, res, req);
+  // setCookie(userSession, res, req);
 
   return res.status(200).json({ ...rest, ...cartData });
 };
