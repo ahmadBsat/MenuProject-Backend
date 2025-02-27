@@ -222,7 +222,7 @@ export const setCookie = (
     domain: domain,
   };
 
-  res.cookie("session_id", session, options);
+  res.cookie("cart_session", session, options);
 };
 
 const find_item_by_id = (

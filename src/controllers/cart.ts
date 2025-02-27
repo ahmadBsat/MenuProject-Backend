@@ -12,7 +12,7 @@ import {
 
 export const get_cart = async (req: express.Request, res: express.Response) => {
   try {
-    const session_id = req.cookies["session_id"] || req.headers["x-session-id"];
+    const session_id = req.headers["x-session-id"] || req.cookies["session_id"];
     const { store } = req.params;
 
     if (!session_id) {
@@ -33,7 +33,7 @@ export const add_to_cart = async (
   try {
     const { product, store } = req.body;
     const currency = req.get("x-currency-id");
-    const session_id = req.cookies["session_id"] || req.headers["x-session-id"];
+    const session_id = req.headers["x-session-id"] || req.cookies["session_id"];
 
     if (!session_id) {
       return res
@@ -93,7 +93,7 @@ export const delete_from_cart = async (
 ) => {
   try {
     const currency = req.get("x-currency-id");
-    const session_id = req.cookies["session_id"] || req.headers["x-session-id"];
+    const session_id = req.headers["x-session-id"] || req.cookies["session_id"];
     const { product_id, options, store } = req.body;
 
     if (!product_id) {
@@ -137,7 +137,7 @@ export const update_cart_products = async (
 ) => {
   try {
     const currency = req.get("x-currency-id");
-    const session_id = req.cookies["session_id"] || req.headers["x-session-id"];
+    const session_id = req.headers["x-session-id"] || req.cookies["session_id"];
 
     const { index, instructions, store } = req.body;
 
@@ -172,7 +172,7 @@ export const reset_cart = async (
   try {
     const { store } = req.body;
     const currency = req.get("x-currency-id");
-    const session_id = req.cookies["session_id"] || req.headers["x-session-id"];
+    const session_id = req.headers["x-session-id"] || req.cookies["session_id"];
 
     if (!session_id) {
       return res
@@ -223,7 +223,7 @@ const handleNewSession = async (
   const { _id, ...rest } = cart.toJSON();
   const cartData = await getCartData(cart, currency, store);
 
-  res.cookie("session_id", userSession, {
+  res.cookie("cart_session", userSession, {
     httpOnly: true,
     secure: true,
     path: "/",
@@ -243,7 +243,7 @@ const handleExistingSession = async (
   store: string
 ) => {
   const currency = req.get("x-currency-id");
-  const session_id = req.cookies["session_id"] || req.headers["x-session-id"];
+  const session_id = req.headers["x-session-id"] || req.cookies["session_id"];
 
   const filter = { session_id: session_id, store };
   const cart = await CartModel.findOne(filter).lean();
