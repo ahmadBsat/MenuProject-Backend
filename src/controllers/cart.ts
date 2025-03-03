@@ -220,6 +220,7 @@ const handleNewSession = async (
     store,
   });
 
+  // session_id is included in cart response
   const { _id, ...rest } = cart.toJSON();
   const cartData = await getCartData(cart, currency, store);
 

@@ -89,6 +89,13 @@ export const getStoreByDomain = async (
       return res.status(404).json({ message: "Store not found" });
     }
 
+    // disable the store directory, visit only through custom domain
+    if (store_check.custom_domain && is_default_domain) {
+      return res
+        .status(400)
+        .json({ message: `Visit this store at ${store_check.custom_domain}` });
+    }
+
     const branch_default = await StoreBranchModel.findOne({
       store: store_check._id,
     }).lean();
