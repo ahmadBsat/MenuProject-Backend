@@ -419,7 +419,7 @@ export const renewStorePlan = async (
     }
 
     const date = new Date(store.renewal_date);
-    date.setMonth(date.getMonth() + 1);
+    date.setFullYear(date.getFullYear() + 1);
 
     store.renewal_date = date;
     await store.save();
