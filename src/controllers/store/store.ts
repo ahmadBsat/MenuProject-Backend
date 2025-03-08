@@ -190,7 +190,7 @@ export const getStoreByDomain = async (
                 localField: "category",
                 foreignField: "_id",
                 as: "category",
-                pipeline: [{ $project: { name: 1, _id: 1 } }],
+                pipeline: [{ $project: { name: 1, _id: 1, order: 1 } }],
               },
             },
             {
