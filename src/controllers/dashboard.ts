@@ -25,9 +25,7 @@ export const traefik_config = async (
           "frontend-service": {
             loadBalancer: {
               servers: [
-                {
-                  url: "http://fmc-frontend-z8g404ow0cgc8ss00wo4ks0k:3000",
-                },
+                { url: "http://fmc-frontend-z8g404ow0cgc8ss00wo4ks0k:3000" },
               ],
             },
           },
@@ -49,7 +47,7 @@ export const traefik_config = async (
 
         traefikConfig.http.routers[routerName] = {
           rule: `Host(\`${domain}\`)`,
-          service: "backend-api",
+          service: "frontend-service",
           entryPoints: ["https"],
           tls: {
             certResolver: "letsencrypt",
