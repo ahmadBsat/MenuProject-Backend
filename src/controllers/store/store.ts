@@ -82,6 +82,10 @@ export const getStoreByDomain = async (
 
     const subdomain = origin.split(".")?.[0] || undefined;
 
+    console.log(subdomain);
+    console.log(domain);
+    console.log(origin);
+
     const store_check = await StoreModel.findOne({
       $or: [
         { custom_domain: origin },
