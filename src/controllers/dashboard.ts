@@ -10,6 +10,7 @@ export const traefik_config = async (
 ) => {
   try {
     const stores = await StoreModel.find({
+      is_active: true,
       $or: [{ domain: { $ne: null } }, { custom_domain: { $ne: null } }],
     }).lean();
 
