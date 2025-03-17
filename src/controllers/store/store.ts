@@ -80,11 +80,9 @@ export const getStoreByDomain = async (
       return res.status(400).json({ message: ERRORS.STORE_ID_REQUIRED });
     }
 
-    const subdomain = origin.split(".")?.[0] || undefined;
-
-    console.log(subdomain);
-    console.log(domain);
-    console.log(origin);
+    const subdomain =
+      origin.split(".")?.[0]?.replace("http://", "")?.replace("https://", "") ||
+      undefined;
 
     const store_check = await StoreModel.findOne({
       $or: [
