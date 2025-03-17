@@ -17,10 +17,17 @@ export const traefik_config = async (
       http: {
         routers: {},
         services: {
-          "backend-api": {
+          // "backend-api": {
+          //   loadBalancer: {
+          //     servers: [{ url: "http://store-ns8c00oksckw04k8scso0kcs:8080" }],
+          //   },
+          // },
+          "frontend-service": {
             loadBalancer: {
               servers: [
-                { url: "http://store-ns8c00oksckw04k8scso0kcs:8080" }, // Replace with your service URL
+                {
+                  url: "http://fmc-frontend-z8g404ow0cgc8ss00wo4ks0k:3000",
+                },
               ],
             },
           },
