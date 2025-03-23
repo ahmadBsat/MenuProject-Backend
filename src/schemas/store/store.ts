@@ -11,6 +11,7 @@ export const StoreSchema = new mongoose.Schema(
     name: { type: String, required: true },
     domain: { type: String, required: true },
     custom_domain: { type: String, required: false },
+    store_label: { type: String, required: true },
     palette: {
       color: { type: String, required: false, default: "black" },
       border: { type: String, required: false, default: "" },
@@ -23,6 +24,8 @@ export const StoreSchema = new mongoose.Schema(
       checkout_content: { type: String, required: false, default: "white" },
       category_color:{ type: String, required: false, default: "white" },
       category_background:{ type: String, required: false, default: "white" },
+      clear_button_color:{ type: String, required: false, default: "white" },
+      clear_button_background:{ type: String, required: false, default: "white" },
     },
     settings: { display_pricing: { type: Boolean, default: true } },
     background_image: { type: String, required: false, default: "" },
