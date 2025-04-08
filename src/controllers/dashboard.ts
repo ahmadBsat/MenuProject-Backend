@@ -3,12 +3,25 @@ import express from "express";
 import { Logger } from "../entities/logger";
 import { ERRORS } from "../constant/errors";
 import { StoreModel } from "../schemas/store/store";
+import * as dotenv from "dotenv";
+
+dotenv.config();
+
+const TRAEFIK_HOST = process.env.TRAEFIK_HOST;
+const TRAEFIK_KEY = process.env.TRAEFIK_KEY;
+const CLIENT_DOMAIN = process.env.CLIENT_DOMAIN; 
 
 export const traefik_config = async (
   req: express.Request,
   res: express.Response
 ) => {
   try {
+    const auth_header = req.headers["x-traefik-token"];
+
+    if (!auth_header || auth_header !== TRAEFIK_KEY) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     const stores = await StoreModel.find({
       is_active: true,
       $or: [{ domain: { $ne: null } }, { custom_domain: { $ne: null } }],
@@ -25,9 +38,7 @@ export const traefik_config = async (
           // },
           "frontend-service": {
             loadBalancer: {
-              servers: [
-                { url: "http://fmc-frontend-z8g404ow0cgc8ss00wo4ks0k:3000" },
-              ],
+              servers: [{ url: TRAEFIK_HOST }],
             },
           },
         },
@@ -40,7 +51,7 @@ export const traefik_config = async (
       if (store.custom_domain) {
         domain = store.custom_domain.replace(/^https?:\/\//, ""); // Remove http:// or https://
       } else if (store.domain) {
-        domain = `${store.domain}.fmctest.xyz`;
+        domain = `${store.domain}.${CLIENT_DOMAIN}`;
       }
 
       if (domain) {

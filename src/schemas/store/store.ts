@@ -11,7 +11,7 @@ export const StoreSchema = new mongoose.Schema(
     name: { type: String, required: true },
     domain: { type: String, required: true },
     custom_domain: { type: String, required: false },
-    store_label: { type: String, required: true },
+    store_label: { type: String, required: false },
     palette: {
       color: { type: String, required: false, default: "black" },
       border: { type: String, required: false, default: "" },
