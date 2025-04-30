@@ -10,4 +10,5 @@ export const ERRORS = {
   BRANCH_NOT_FOUND: "Branch not found",
   NO_CATEGORY: "Category not found",
   NO_BANNER: "Banner not found",
+  NO_SECTION: "Section not found",
 };

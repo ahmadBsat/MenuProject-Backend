@@ -11,6 +11,7 @@ import banner from "./banner";
 import currency from "./currency";
 import product_items from "./product/product_items";
 import cart from "./cart";
+import section from "./section";
 
 const router = express.Router();
 
@@ -27,6 +28,7 @@ export default (): express.Router => {
   currency(router);
   cart(router);
   banner(router);
+  section(router);
 
   return router;
 };

@@ -1,19 +1,12 @@
 import mongoose from "mongoose";
 
-export const CategorySchema = new mongoose.Schema(
+export const SectionSchema = new mongoose.Schema(
   {
     store: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       ref: "Store",
     },
-    section: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        required: false,
-        ref: "Section",
-      },
-    ],
     name: { type: String, required: true },
     order: { type: Number, required: true, default: 1 },
     is_active: { type: Boolean, default: true },
@@ -21,4 +14,4 @@ export const CategorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export const CategoryModel = mongoose.model("Category", CategorySchema);
+export const SectionModel = mongoose.model("Section", SectionSchema);

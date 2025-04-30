@@ -198,7 +198,24 @@ export const getStoreByDomain = async (
                 localField: "category",
                 foreignField: "_id",
                 as: "category",
-                pipeline: [{ $project: { name: 1, _id: 1, order: 1 } }],
+                pipeline: [
+                  {
+                    $lookup: {
+                      from: "sections",
+                      localField: "section",
+                      foreignField: "_id",
+                      as: "section",
+                    },
+                  },
+                  {
+                    $project: {
+                      name: 1,
+                      _id: 1,
+                      order: 1,
+                      section: 1, // Include the section in the response
+                    },
+                  },
+                ],
               },
             },
             {
@@ -221,7 +238,7 @@ export const getStoreByDomain = async (
           renewal_date: 0,
           renewal_cost: 0,
           domain: 0,
-        }        
+        },
       },
     ]);
 
