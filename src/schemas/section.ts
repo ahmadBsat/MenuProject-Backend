@@ -10,6 +10,7 @@ export const SectionSchema = new mongoose.Schema(
     name: { type: String, required: true },
     order: { type: Number, required: true, default: 1 },
     is_active: { type: Boolean, default: true },
+    images: [{ type: String, required: true }],
   },
   { timestamps: true }
 );

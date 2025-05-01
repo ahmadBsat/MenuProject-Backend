@@ -212,7 +212,8 @@ export const getStoreByDomain = async (
                       name: 1,
                       _id: 1,
                       order: 1,
-                      section: 1, // Include the section in the response
+                      images: 1,
+                      section: 1,
                     },
                   },
                 ],
