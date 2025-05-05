@@ -238,7 +238,7 @@ export const getStoreByDomain = async (
           is_active: 0,
           renewal_date: 0,
           renewal_cost: 0,
-          domain: 0,
+          domain: 1,
         },
       },
     ]);
