@@ -54,12 +54,22 @@ export const getStoreBranches = async (
       return res.status(404).json({ message: ERRORS.NO_USER_STORE });
     }
 
-    const branches = await StoreBranchModel.find({ store: store._id })
+    const { search } = req.query;
+
+    const query: Record<string, any> = {};
+
+    if (search && typeof search === "string") {
+      query.$or = [
+        { name: { $regex: search.trim(), $options: "i" } },
+      ];
+    }
+
+    const branches = await StoreBranchModel.find({ store: store._id, ...query })
       .limit(limit)
       .skip(skip)
       .sort(sortBy)
       .lean();
-    const count = await StoreBranchModel.countDocuments({ store: store._id });
+    const count = await StoreBranchModel.countDocuments({ store: store._id, ...query });
     const { meta } = calculate_pages(count, page, limit);
 
     return res.status(200).json({ data: branches, meta }).end();

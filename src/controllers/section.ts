@@ -40,7 +40,7 @@ export const getStoreSectionById = async (
   }
 };
 
-export const getStoreSections= async (
+export const getStoreSections = async (
   req: express.Request,
   res: express.Response
 ) => {
@@ -54,13 +54,23 @@ export const getStoreSections= async (
       return res.status(404).json({ message: ERRORS.NO_USER_STORE });
     }
 
-    const sections = await SectionModel.find({ store: store._id })
+    const { search } = req.query;
+
+    const query: Record<string, any> = {};
+
+    if (search && typeof search === "string") {
+      query.$or = [
+        { name: { $regex: search.trim(), $options: "i" } },
+      ];
+    }
+    
+    const sections = await SectionModel.find({ store: store._id, ...query })
       .limit(limit)
       .skip(skip)
       .sort(sortBy)
       .lean();
 
-    const count = await SectionModel.countDocuments({ store: store._id });
+    const count = await SectionModel.countDocuments({ store: store._id, ...query });
     const { meta } = calculate_pages(count, page, limit);
     return res.status(200).json({ data: sections, meta }).end();
   } catch (error) {

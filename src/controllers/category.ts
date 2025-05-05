@@ -25,6 +25,7 @@ export const getCategoryById = async (
       return res.status(404).json({ message: ERRORS.NO_USER_STORE });
     }
 
+
     const category = await CategoryModel.findOne({
       _id: id,
       store: store._id,
@@ -55,13 +56,23 @@ export const getStoreCategoryes = async (
       return res.status(404).json({ message: ERRORS.NO_USER_STORE });
     }
 
-    const categoryes = await CategoryModel.find({ store: store._id })
+    const { search } = req.query;
+
+    const query: Record<string, any> = {};
+
+    if (search && typeof search === "string") {
+      query.$or = [
+        { name: { $regex: search.trim(), $options: "i" } },
+      ];
+    }
+
+    const categoryes = await CategoryModel.find({ store: store._id, ...query })
       .limit(limit)
       .skip(skip)
       .sort(sortBy)
       .lean();
       
-    const count = await CategoryModel.countDocuments({ store: store._id });
+    const count = await CategoryModel.countDocuments({ store: store._id, ...query });
     const { meta } = calculate_pages(count, page, limit);
 
     return res.status(200).json({ data: categoryes, meta }).end();

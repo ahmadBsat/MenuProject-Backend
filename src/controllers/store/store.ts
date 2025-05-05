@@ -49,14 +49,21 @@ export const getAllStores = async (
 ) => {
   try {
     const { limit, page, sortBy, skip } = handleParams(req.query);
+    const { search } = req.query;
 
-    const stores = await StoreModel.find({})
+    const query: Record<string, any> = {};
+
+    if (search && typeof search === 'string') {
+      query.name = { $regex: search.trim(), $options: 'i' };
+    }
+
+    const stores = await StoreModel.find(query)
       .limit(limit)
       .skip(skip)
       .sort(sortBy)
       .lean();
 
-    const count = await StoreModel.countDocuments({});
+    const count = await StoreModel.countDocuments(query);
     const { meta } = calculate_pages(count, page, limit);
 
     return res.status(200).json({ data: stores, meta }).end();
@@ -65,6 +72,7 @@ export const getAllStores = async (
     return res.status(406).send({ message: error.message || ERRORS.SERVER });
   }
 };
+
 
 export const getStoreByDomain = async (
   req: express.Request,

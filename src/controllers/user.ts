@@ -1,4 +1,4 @@
-import express from "express";
+import express, { query } from "express";
 import { Logger } from "../entities/logger";
 import { ERRORS } from "../constant/errors";
 import { UserModel } from "../schemas/user";
@@ -11,14 +11,23 @@ export const getAllUsers = async (
 ) => {
   try {
     const { limit, page, sortBy, skip } = handleParams(req.query);
+    const { search } = req.query;
 
-    const users = await UserModel.find({})
+    const query: Record<string, any> = {};
+
+    if (search && typeof search === "string") {
+      query.$or = [
+        { firstname: { $regex: search.trim(), $options: "i" } },
+        { lastname: { $regex: search.trim(), $options: "i" } },
+      ];
+    }
+    const users = await UserModel.find(query)
       .limit(limit)
       .skip(skip)
       .sort(sortBy)
       .lean();
 
-    const count = await UserModel.countDocuments({});
+    const count = await UserModel.countDocuments(query);
     const { meta } = calculate_pages(count, page, limit);
 
     return res.status(200).json({ data: users, meta }).end();
