@@ -10,6 +10,8 @@ export const SectionSchema = new mongoose.Schema(
     name: { type: String, required: true },
     order: { type: Number, required: true, default: 1 },
     is_active: { type: Boolean, default: true },
+    is_promotive: { type: Boolean, default: false },
+    promotive_message: { type: String, default: "" },
     images: [{ type: String, required: true }],
   },
   { timestamps: true }
