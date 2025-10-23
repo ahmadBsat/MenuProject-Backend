@@ -43,7 +43,7 @@ export const ProductSchema = new mongoose.Schema(
         ref: "Category",
       },
     ],
-    is_active: { type: Boolean, required: true, default: false },
+    is_active: { type: Boolean, required: true, default: true },
   },
   { timestamps: true }
 );

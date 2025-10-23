@@ -1,12 +1,14 @@
 import express from "express";
 import { isAdmin, isAuthenticated } from "../../middlewares";
 import {
+  createBulkStoreProducts,
   createStoreProduct,
   deleteStoreProduct,
   getProductById,
   getProductsByStoreId,
   getStoreProducts,
   updateStoreProduct,
+  uploadExcel,
 } from "../../controllers/product/product";
 
 export default (router: express.Router) => {
@@ -25,4 +27,11 @@ export default (router: express.Router) => {
   router.patch("/api/v1/products/:id", isAuthenticated, updateStoreProduct);
 
   router.delete("/api/v1/products/:id", isAuthenticated, deleteStoreProduct);
+
+  router.post(
+    "/api/v1/products/bulk",
+    isAuthenticated,
+    uploadExcel,
+    createBulkStoreProducts
+  );
 };

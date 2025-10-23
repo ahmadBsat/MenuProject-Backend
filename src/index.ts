@@ -4,12 +4,12 @@ import { nodeProfilingIntegration } from "@sentry/profiling-node";
 
 dotenv.config();
 
-Sentry.init({
-  dsn: process.env.SENTRY_DNS,
-  integrations: [nodeProfilingIntegration()],
-  tracesSampleRate: 0.2,
-  profilesSampleRate: 0.2,
-});
+// Sentry.init({
+//   dsn: process.env.SENTRY_DNS,
+//   integrations: [nodeProfilingIntegration()],
+//   tracesSampleRate: 0.2,
+//   // profilesSampleRate: 0.2,
+// });
 
 import http from "http";
 import cors from "cors";
