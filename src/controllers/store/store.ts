@@ -140,6 +140,7 @@ export const getStoreByDomain = async (
                 name: 1,
                 phone_number: 1,
                 address: 1,
+                display_cart: 1,
               },
             },
           ],

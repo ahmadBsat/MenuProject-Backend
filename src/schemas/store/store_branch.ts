@@ -10,6 +10,7 @@ export const StoreBranchSchema = new mongoose.Schema(
     name: { type: String, required: true },
     address: { type: String, default: "" },
     phone_number: { type: String, required: true },
+    display_cart: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
