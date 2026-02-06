@@ -9,11 +9,11 @@ dotenv.config();
 
 const TRAEFIK_HOST = process.env.TRAEFIK_HOST; // http://frontend-container:3000
 const TRAEFIK_KEY = process.env.TRAEFIK_KEY;
-const CLIENT_DOMAIN = process.env.CLIENT_DOMAIN; 
+const CLIENT_DOMAIN = process.env.CLIENT_DOMAIN;
 
 export const traefik_config = async (
   req: express.Request,
-  res: express.Response
+  res: express.Response,
 ) => {
   try {
     const auth_header = req.headers["x-traefik-token"];
@@ -38,7 +38,8 @@ export const traefik_config = async (
             },
           },
         },
-        middlewares: { // ADDED
+        middlewares: {
+          // ADDED
           "redirect-to-https": {
             redirectScheme: {
               scheme: "https",
@@ -65,15 +66,15 @@ export const traefik_config = async (
         traefikConfig.http.routers[`${routerName}-http`] = {
           rule: `Host(\`${domain}\`)`,
           service: "frontend-service",
-          entryPoints: ["http"], // CHANGED
-          middlewares: ["redirect-to-https"], // ADDED
+          entryPoints: ["web"], // CHANGED from 'http'
+          middlewares: ["redirect-to-https"],
         };
 
         // HTTPS router
         traefikConfig.http.routers[`${routerName}-https`] = {
           rule: `Host(\`${domain}\`)`,
           service: "frontend-service",
-          entryPoints: ["https"],
+          entryPoints: ["websecure"], // CHANGED from 'https'
           tls: {
             certResolver: "letsencrypt",
           },
