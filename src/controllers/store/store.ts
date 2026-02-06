@@ -84,6 +84,10 @@ export const getStoreByDomain = async (
     const currency = req.get("x-currency-id");
     const is_default_domain = origin === process.env.CLIENT_URI;
 
+    Logger.info(
+      `[getStoreByDomain] Request received - Origin: ${origin}, Domain: ${domain}, Branch: ${branch}, Currency: ${currency}, Is Default: ${is_default_domain}`
+    );
+
     if (!domain && is_default_domain) {
       return res.status(400).json({ message: ERRORS.STORE_ID_REQUIRED });
     }
@@ -102,8 +106,13 @@ export const getStoreByDomain = async (
     }).lean();
 
     if (!store_check) {
+      Logger.warn(
+        `[getStoreByDomain] Store not found - Origin: ${origin}, Domain: ${domain}, Subdomain: ${subdomain}`
+      );
       return res.status(404).json({ message: "Store not found" });
     }
+
+    Logger.info(`[getStoreByDomain] Store found - ID: ${store_check._id}, Name: ${store_check.name}`);
 
     // disable the store directory, visit only through custom domain
     if (store_check.custom_domain && is_default_domain) {
@@ -271,9 +280,10 @@ export const getStoreByDomain = async (
       };
     });
 
+    Logger.info(`[getStoreByDomain] Successfully returning store data - ID: ${result._id}`);
     return res.status(200).json(result).end();
   } catch (error) {
-    console.log(error);
+    Logger.error(`[getStoreByDomain] Error: ${error.message || error}`);
     return res.status(406).send({ message: error.message || ERRORS.SERVER });
   }
 };

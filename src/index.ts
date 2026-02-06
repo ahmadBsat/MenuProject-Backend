@@ -58,8 +58,20 @@ app.set("trust proxy", 1);
 
 const server = http.createServer(app);
 
-app.use(logger("dev"));
+// Use combined format for production with more details
+const logFormat = process.env.NODE_ENV === "production"
+  ? ":method :url :status :response-time ms - :res[content-length] - :remote-addr - :user-agent"
+  : "dev";
+app.use(logger(logFormat));
 app.use("/", router());
+
+// 404 handler with detailed logging
+app.use((req, res) => {
+  Logger.warn(
+    `404 Not Found: ${req.method} ${req.url} | Query: ${JSON.stringify(req.query)} | Headers: ${JSON.stringify(req.headers)} | IP: ${req.ip}`
+  );
+  res.status(404).json({ message: "Route not found" });
+});
 
 Sentry.setupExpressErrorHandler(app);
 
