@@ -8,6 +8,7 @@ import { calculate_pages, handleParams, success_msg } from "../../utils/common";
 import * as XLSX from "xlsx";
 import multer from "multer";
 import { CategoryModel } from "../../schemas/category";
+import { StoreBranchModel } from "../../schemas/store/store_branch";
 
 export const getStoreProducts = async (
   req: express.Request,
@@ -233,22 +234,30 @@ export const createBulkStoreProducts = async (
       return res.status(404).json({ message: ERRORS.NO_USER_STORE });
     }
 
-    // Parse Excel file
-    const workbook = XLSX.read(file.buffer, { type: "buffer" });
+    // Parse Excel file with UTF-8 encoding support for Arabic text
+    const workbook = XLSX.read(file.buffer, { 
+      type: "buffer",
+      codepage: 65001,
+      cellText: false,
+      cellDates: true
+    });
+    
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
 
-    // Convert to JSON
-    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+      raw: false,
+      defval: ""
+    });
 
     if (jsonData.length === 0) {
       return res.status(400).json({ message: "Excel file is empty" });
     }
 
-    // Validate and prepare products
     const products = [];
     const errors = [];
-    const createdCategories: string[] = []; // Track auto-created categories
+    const createdCategories: string[] = [];
+    const createdBranches: string[] = []; // Track auto-created branches
 
     for (let i = 0; i < jsonData.length; i++) {
       const row: any = jsonData[i];
@@ -264,7 +273,9 @@ export const createBulkStoreProducts = async (
           continue;
         }
 
-        // Parse category names
+        // ========================================
+        // CATEGORY HANDLING
+        // ========================================
         let categoryNames: string[];
         if (typeof row.category === "string") {
           categoryNames = row.category
@@ -291,7 +302,6 @@ export const createBulkStoreProducts = async (
           continue;
         }
 
-        // Find existing categories
         let categories = await CategoryModel.find({
           name: { $in: categoryNames },
           store: store._id,
@@ -302,27 +312,80 @@ export const createBulkStoreProducts = async (
           (name) => !foundCategoryNames.includes(name)
         );
 
-        // Auto-create missing categories
         if (missingCategories.length > 0) {
           const newCategories = await CategoryModel.insertMany(
             missingCategories.map((name) => ({
               name: name,
               store: store._id,
-              status: "active", // Set default status
-              // Add any other required fields for your Category model
+              status: "active",
             }))
           );
 
-          // Track created categories for the response
           createdCategories.push(...missingCategories);
-
-          // Add new categories to the list
           categories = [...categories, ...newCategories];
         }
 
         const categoryIds = categories.map((c) => c._id);
 
-        // Validate and parse price
+        // ========================================
+        // BRANCH HANDLING (supports comma-separated branches)
+        // ========================================
+        let branchIds: any[] = [];
+        
+        if (row.branch) {
+          // Parse branch names (supports single or comma-separated)
+          let branchNames: string[];
+          if (typeof row.branch === "string") {
+            branchNames = row.branch
+              .split(",")
+              .map((b: string) => b.trim())
+              .filter((b: string) => b.length > 0);
+          } else if (Array.isArray(row.branch)) {
+            branchNames = row.branch
+              .map((b: any) => String(b).trim())
+              .filter((b: string) => b.length > 0);
+          } else {
+            branchNames = [String(row.branch).trim()];
+          }
+
+          if (branchNames.length > 0) {
+            // Find existing branches
+            let branches = await StoreBranchModel.find({
+              name: { $in: branchNames },
+              store: store._id,
+            }).select("_id name");
+
+            const foundBranchNames = branches.map((b) => b.name);
+            const missingBranches = branchNames.filter(
+              (name) => !foundBranchNames.includes(name)
+            );
+
+            // Auto-create missing branches
+            if (missingBranches.length > 0) {
+              // Check if phone_number is required - use a default or get from Excel
+              const defaultPhoneNumber = row.branch_phone || "0000000000"; // You can customize this
+              
+              const newBranches = await StoreBranchModel.insertMany(
+                missingBranches.map((name) => ({
+                  name: name,
+                  store: store._id,
+                  phone_number: defaultPhoneNumber, // Required field
+                  address: row.branch_address || "", // Optional from Excel
+                  display_cart: true, // Default value
+                }))
+              );
+
+              createdBranches.push(...missingBranches);
+              branches = [...branches, ...newBranches];
+            }
+
+            branchIds = branches.map((b) => b._id);
+          }
+        }
+
+        // ========================================
+        // VALIDATION & PRODUCT PREPARATION
+        // ========================================
         const price = parseFloat(row.price);
         if (isNaN(price) || price < 0) {
           errors.push({
@@ -332,7 +395,6 @@ export const createBulkStoreProducts = async (
           continue;
         }
 
-        // Validate and parse stock
         const stock = parseInt(row.stock) || 0;
         if (stock < 0) {
           errors.push({
@@ -342,19 +404,19 @@ export const createBulkStoreProducts = async (
           continue;
         }
 
-        // Parse status from Excel (optional column)
         const status = row.status?.toLowerCase() === "inactive" ? "inactive" : "active";
 
         // Prepare product object
         const product = {
-          name: row.name.trim(),
+          name: String(row.name || '').trim(),
           description: row.description ? String(row.description).trim() : "",
           price: price,
           category: categoryIds,
+          branch: branchIds.length > 0 ? branchIds : undefined, // Only add if branches exist
           stock: stock,
           image: row.image ? String(row.image).trim() : "",
           sku: row.sku ? String(row.sku).trim() : "",
-          status: status, // ✅ Explicitly set status to active
+          status: status,
           store: store._id,
         };
 
@@ -389,6 +451,9 @@ export const createBulkStoreProducts = async (
         created: createdProducts.length,
         categoriesCreated: createdCategories.length > 0 
           ? `Auto-created categories: ${createdCategories.join(", ")}` 
+          : undefined,
+        branchesCreated: createdBranches.length > 0 
+          ? `Auto-created branches: ${createdBranches.join(", ")}` 
           : undefined,
         errors: errors.length > 0 ? errors : undefined,
       },
