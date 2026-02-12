@@ -1,3 +1,4 @@
+import { required } from "joi";
 import mongoose from "mongoose";
 
 export const AdditionSchema = new mongoose.Schema(
@@ -13,7 +14,7 @@ export const AdditionSchema = new mongoose.Schema(
     ],
     is_multiple: { type: Boolean, default: false },
   },
-  { _id: false }
+  { _id: false },
 );
 
 export const ProductSchema = new mongoose.Schema(
@@ -32,6 +33,7 @@ export const ProductSchema = new mongoose.Schema(
     ],
     name: { type: String, required: true },
     description: { type: String, required: false },
+    notes: { type: String, required: false },
     extra_information: { type: String, required: false },
     price: { type: Number, required: true },
     images: [{ type: String, required: true }],
@@ -45,7 +47,7 @@ export const ProductSchema = new mongoose.Schema(
     ],
     is_active: { type: Boolean, required: true, default: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const ProductModel = mongoose.model("Product", ProductSchema);

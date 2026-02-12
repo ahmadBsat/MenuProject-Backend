@@ -12,7 +12,7 @@ import { StoreBranchModel } from "../../schemas/store/store_branch";
 
 export const getStoreProducts = async (
   req: express.Request,
-  res: express.Response
+  res: express.Response,
 ) => {
   try {
     const user = res.locals.user as User;
@@ -53,7 +53,7 @@ export const getStoreProducts = async (
 
 export const getProductsByStoreId = async (
   req: express.Request,
-  res: express.Response
+  res: express.Response,
 ) => {
   try {
     const { id } = req.params;
@@ -87,7 +87,7 @@ export const getProductsByStoreId = async (
 
 export const getProductById = async (
   req: express.Request,
-  res: express.Response
+  res: express.Response,
 ) => {
   try {
     const { id } = req.params;
@@ -113,7 +113,7 @@ export const getProductById = async (
 
 export const createStoreProduct = async (
   req: express.Request,
-  res: express.Response
+  res: express.Response,
 ) => {
   try {
     const data = req.body;
@@ -142,7 +142,7 @@ export const createStoreProduct = async (
 
 export const updateStoreProduct = async (
   req: express.Request,
-  res: express.Response
+  res: express.Response,
 ) => {
   try {
     const data = req.body;
@@ -164,7 +164,7 @@ export const updateStoreProduct = async (
     await ProductModel.updateOne(
       { _id: id, store: store._id },
       { ...data },
-      { upsert: true }
+      { upsert: true },
     );
 
     return res.status(200).json(success_msg("Product updated")).end();
@@ -176,7 +176,7 @@ export const updateStoreProduct = async (
 
 export const deleteStoreProduct = async (
   req: express.Request,
-  res: express.Response
+  res: express.Response,
 ) => {
   try {
     const { id } = req.params;
@@ -218,7 +218,7 @@ const upload = multer({
 
 export const createBulkStoreProducts = async (
   req: express.Request,
-  res: express.Response
+  res: express.Response,
 ) => {
   try {
     const user = res.locals.user as User;
@@ -235,19 +235,19 @@ export const createBulkStoreProducts = async (
     }
 
     // Parse Excel file with UTF-8 encoding support for Arabic text
-    const workbook = XLSX.read(file.buffer, { 
+    const workbook = XLSX.read(file.buffer, {
       type: "buffer",
       codepage: 65001,
       cellText: false,
-      cellDates: true
+      cellDates: true,
     });
-    
+
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
 
     const jsonData = XLSX.utils.sheet_to_json(worksheet, {
       raw: false,
-      defval: ""
+      defval: "",
     });
 
     if (jsonData.length === 0) {
@@ -309,7 +309,7 @@ export const createBulkStoreProducts = async (
 
         const foundCategoryNames = categories.map((c) => c.name);
         const missingCategories = categoryNames.filter(
-          (name) => !foundCategoryNames.includes(name)
+          (name) => !foundCategoryNames.includes(name),
         );
 
         if (missingCategories.length > 0) {
@@ -318,7 +318,7 @@ export const createBulkStoreProducts = async (
               name: name,
               store: store._id,
               status: "active",
-            }))
+            })),
           );
 
           createdCategories.push(...missingCategories);
@@ -331,7 +331,7 @@ export const createBulkStoreProducts = async (
         // BRANCH HANDLING (supports comma-separated branches)
         // ========================================
         let branchIds: any[] = [];
-        
+
         if (row.branch) {
           // Parse branch names (supports single or comma-separated)
           let branchNames: string[];
@@ -357,14 +357,14 @@ export const createBulkStoreProducts = async (
 
             const foundBranchNames = branches.map((b) => b.name);
             const missingBranches = branchNames.filter(
-              (name) => !foundBranchNames.includes(name)
+              (name) => !foundBranchNames.includes(name),
             );
 
             // Auto-create missing branches
             if (missingBranches.length > 0) {
               // Check if phone_number is required - use a default or get from Excel
               const defaultPhoneNumber = row.branch_phone || "0000000000"; // You can customize this
-              
+
               const newBranches = await StoreBranchModel.insertMany(
                 missingBranches.map((name) => ({
                   name: name,
@@ -372,7 +372,7 @@ export const createBulkStoreProducts = async (
                   phone_number: defaultPhoneNumber, // Required field
                   address: row.branch_address || "", // Optional from Excel
                   display_cart: true, // Default value
-                }))
+                })),
               );
 
               createdBranches.push(...missingBranches);
@@ -404,12 +404,14 @@ export const createBulkStoreProducts = async (
           continue;
         }
 
-        const status = row.status?.toLowerCase() === "inactive" ? "inactive" : "active";
+        const status =
+          row.status?.toLowerCase() === "inactive" ? "inactive" : "active";
 
         // Prepare product object
         const product = {
-          name: String(row.name || '').trim(),
+          name: String(row.name || "").trim(),
           description: row.description ? String(row.description).trim() : "",
+          notes: row.notes ? String(row.notes).trim() : "",
           price: price,
           category: categoryIds,
           branch: branchIds.length > 0 ? branchIds : undefined, // Only add if branches exist
@@ -449,12 +451,14 @@ export const createBulkStoreProducts = async (
       message: "Products created successfully",
       data: {
         created: createdProducts.length,
-        categoriesCreated: createdCategories.length > 0 
-          ? `Auto-created categories: ${createdCategories.join(", ")}` 
-          : undefined,
-        branchesCreated: createdBranches.length > 0 
-          ? `Auto-created branches: ${createdBranches.join(", ")}` 
-          : undefined,
+        categoriesCreated:
+          createdCategories.length > 0
+            ? `Auto-created categories: ${createdCategories.join(", ")}`
+            : undefined,
+        branchesCreated:
+          createdBranches.length > 0
+            ? `Auto-created branches: ${createdBranches.join(", ")}`
+            : undefined,
         errors: errors.length > 0 ? errors : undefined,
       },
     });
