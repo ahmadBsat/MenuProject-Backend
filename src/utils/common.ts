@@ -85,7 +85,7 @@ export const handleParams = (params: any, keys?: string[]) => {
   }
 
   const page = parseInt(params.page) || 1;
-  const limit = parseInt(params.limit) || 50;
+  const limit = parseInt(params.limit) || 999;
 
   let sortBy: any = {};
   const sort = params.sort;
