@@ -9,6 +9,7 @@ import * as XLSX from "xlsx";
 import multer from "multer";
 import { CategoryModel } from "../../schemas/category";
 import { StoreBranchModel } from "../../schemas/store/store_branch";
+import { SectionModel } from "../../schemas/section";
 
 export const getStoreProducts = async (
   req: express.Request,
@@ -384,6 +385,36 @@ export const createBulkStoreProducts = async (
         }
 
         // ========================================
+        // SECTION HANDLING (supports comma-separated sections)
+        // ========================================
+        let sectionIds: any[] = [];
+
+        if (row.section) {
+          let sectionNames: string[];
+          if (typeof row.section === "string") {
+            sectionNames = row.section
+              .split(",")
+              .map((s: string) => s.trim())
+              .filter((s: string) => s.length > 0);
+          } else if (Array.isArray(row.section)) {
+            sectionNames = row.section
+              .map((s: any) => String(s).trim())
+              .filter((s: string) => s.length > 0);
+          } else {
+            sectionNames = [String(row.section).trim()];
+          }
+
+          if (sectionNames.length > 0) {
+            const sections = await SectionModel.find({
+              name: { $in: sectionNames },
+              store: store._id,
+            }).select("_id name");
+
+            sectionIds = sections.map((s) => s._id);
+          }
+        }
+
+        // ========================================
         // VALIDATION & PRODUCT PREPARATION
         // ========================================
         const price = parseFloat(row.price);
@@ -404,8 +435,8 @@ export const createBulkStoreProducts = async (
           continue;
         }
 
-        const status =
-          row.status?.toLowerCase() === "inactive" ? "inactive" : "active";
+        const is_active =
+          row.status?.toLowerCase() === "inactive" ? false : true;
 
         // Prepare product object
         const product = {
@@ -415,10 +446,9 @@ export const createBulkStoreProducts = async (
           price: price,
           category: categoryIds,
           branch: branchIds.length > 0 ? branchIds : undefined, // Only add if branches exist
-          stock: stock,
-          image: row.image ? String(row.image).trim() : "",
-          sku: row.sku ? String(row.sku).trim() : "",
-          status: status,
+          images: row.image ? [String(row.image).trim()] : [],
+          section: sectionIds.length > 0 ? sectionIds : undefined,
+          is_active: is_active,
           store: store._id,
         };
 
