@@ -255,7 +255,8 @@ export const createBulkStoreProducts = async (
       return res.status(400).json({ message: "Excel file is empty" });
     }
 
-    const products = [];
+    const productsToCreate = [];
+    const productsToUpdate = [];
     const errors = [];
     const createdCategories: string[] = [];
     const createdBranches: string[] = []; // Track auto-created branches
@@ -272,6 +273,25 @@ export const createBulkStoreProducts = async (
             message: "Name and category are required",
           });
           continue;
+        }
+
+        // Check if this is an update operation (row has id field)
+        const isUpdate = row.id && String(row.id).trim().length > 0;
+        let existingProduct = null;
+
+        if (isUpdate) {
+          existingProduct = await ProductModel.findOne({
+            _id: row.id,
+            store: store._id,
+          });
+
+          if (!existingProduct) {
+            errors.push({
+              row: rowNumber,
+              message: `Product with ID ${row.id} not found`,
+            });
+            continue;
+          }
         }
 
         // ========================================
@@ -439,7 +459,7 @@ export const createBulkStoreProducts = async (
           row.status?.toLowerCase() === "inactive" ? false : true;
 
         // Prepare product object
-        const product = {
+        const productData = {
           name: String(row.name || "").trim(),
           description: row.description ? String(row.description).trim() : "",
           notes: row.notes ? String(row.notes).trim() : "",
@@ -452,7 +472,14 @@ export const createBulkStoreProducts = async (
           store: store._id,
         };
 
-        products.push(product);
+        if (isUpdate) {
+          productsToUpdate.push({
+            id: row.id,
+            data: productData,
+          });
+        } else {
+          productsToCreate.push(productData);
+        }
       } catch (rowError) {
         errors.push({
           row: rowNumber,
@@ -462,25 +489,36 @@ export const createBulkStoreProducts = async (
     }
 
     // If there are validation errors and no valid products, return them
-    if (errors.length > 0 && products.length === 0) {
+    if (errors.length > 0 && productsToCreate.length === 0 && productsToUpdate.length === 0) {
       return res.status(400).json({
         message: "All rows have errors",
         errors,
       });
     }
 
-    // Insert products in bulk
+    // Insert new products in bulk
     let createdProducts = [];
-    if (products.length > 0) {
-      createdProducts = await ProductModel.insertMany(products, {
+    if (productsToCreate.length > 0) {
+      createdProducts = await ProductModel.insertMany(productsToCreate, {
         ordered: false,
       });
     }
 
+    // Update existing products
+    let updatedCount = 0;
+    for (const product of productsToUpdate) {
+      await ProductModel.updateOne(
+        { _id: product.id, store: store._id },
+        { $set: product.data }
+      );
+      updatedCount++;
+    }
+
     return res.status(200).json({
-      message: "Products created successfully",
+      message: "Products processed successfully",
       data: {
         created: createdProducts.length,
+        updated: updatedCount,
         categoriesCreated:
           createdCategories.length > 0
             ? `Auto-created categories: ${createdCategories.join(", ")}`
