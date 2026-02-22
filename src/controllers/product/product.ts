@@ -10,6 +10,7 @@ import multer from "multer";
 import { CategoryModel } from "../../schemas/category";
 import { StoreBranchModel } from "../../schemas/store/store_branch";
 import { SectionModel } from "../../schemas/section";
+import { ProductItemModel } from "../../schemas/product/product_item";
 
 export const getStoreProducts = async (
   req: express.Request,
@@ -435,6 +436,102 @@ export const createBulkStoreProducts = async (
         }
 
         // ========================================
+        // ADDITIONS HANDLING (format: group|name|items|is_multiple)
+        // ========================================
+        let additions: any[] = [];
+
+        if (row.additions) {
+          try {
+            // Parse additions - expected format: "group1|name1|item1+item2|true,group2|name2|item3|false"
+            let additionsStr: string;
+            if (typeof row.additions === "string") {
+              additionsStr = row.additions.trim();
+            } else {
+              additionsStr = String(row.additions).trim();
+            }
+
+            if (additionsStr.length > 0) {
+              const additionGroups = additionsStr
+                .split(",")
+                .map((a: string) => a.trim())
+                .filter((a: string) => a.length > 0);
+
+              for (const additionStr of additionGroups) {
+                const parts = additionStr.split("|").map((p: string) => p.trim());
+
+                if (parts.length < 3) {
+                  errors.push({
+                    row: rowNumber,
+                    message: `Invalid addition format in "${additionStr}". Expected: group|name|items|is_multiple`,
+                  });
+                  continue;
+                }
+
+                const [group, name, itemsStr, isMultipleStr] = parts;
+
+                // Parse item names (plus-sign separated)
+                const itemNames = itemsStr
+                  .split("+")
+                  .map((i: string) => i.trim())
+                  .filter((i: string) => i.length > 0);
+
+                if (itemNames.length === 0) {
+                  errors.push({
+                    row: rowNumber,
+                    message: `No items specified for addition "${name}" in group "${group}"`,
+                  });
+                  continue;
+                }
+
+                // Find or create product items
+                let items = await ProductItemModel.find({
+                  name: { $in: itemNames },
+                  store: store._id,
+                }).select("_id name");
+
+                const foundItemNames = items.map((i) => i.name);
+                const missingItems = itemNames.filter(
+                  (name) => !foundItemNames.includes(name),
+                );
+
+                // Auto-create missing product items with default price 0
+                if (missingItems.length > 0) {
+                  const newItems = await ProductItemModel.insertMany(
+                    missingItems.map((itemName) => ({
+                      name: itemName,
+                      store: store._id,
+                      additional_price: 0,
+                      image: "",
+                    })),
+                  );
+                  items = [...items, ...newItems];
+                }
+
+                const itemIds = items.map((i) => i._id);
+
+                // Parse is_multiple flag (default: false)
+                const isMultiple =
+                  isMultipleStr?.toLowerCase() === "true" ||
+                  isMultipleStr === "1";
+
+                additions.push({
+                  group: group,
+                  name: name,
+                  items: itemIds,
+                  is_multiple: isMultiple,
+                });
+              }
+            }
+          } catch (additionError) {
+            errors.push({
+              row: rowNumber,
+              message: `Error parsing additions: ${additionError.message}`,
+            });
+            continue;
+          }
+        }
+
+        // ========================================
         // VALIDATION & PRODUCT PREPARATION
         // ========================================
         const price = parseFloat(row.price);
@@ -468,6 +565,7 @@ export const createBulkStoreProducts = async (
           branch: branchIds.length > 0 ? branchIds : undefined, // Only add if branches exist
           images: row.image ? [String(row.image).trim()] : [],
           section: sectionIds.length > 0 ? sectionIds : undefined,
+          additions: additions.length > 0 ? additions : undefined,
           is_active: is_active,
           store: store._id,
         };
