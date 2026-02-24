@@ -236,8 +236,17 @@ export const createBulkStoreProducts = async (
       return res.status(404).json({ message: ERRORS.NO_USER_STORE });
     }
 
+    // Strip UTF-8 BOM if present
+    let buffer = file.buffer;
+    if (buffer.length >= 3 &&
+        buffer[0] === 0xEF &&
+        buffer[1] === 0xBB &&
+        buffer[2] === 0xBF) {
+      buffer = buffer.slice(3);
+    }
+
     // Parse Excel file with UTF-8 encoding support for Arabic text
-    const workbook = XLSX.read(file.buffer, {
+    const workbook = XLSX.read(buffer, {
       type: "buffer",
       codepage: 65001,
       cellText: false,
