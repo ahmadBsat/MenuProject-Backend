@@ -252,6 +252,12 @@ export const createBulkStoreProducts = async (
       defval: "",
     });
 
+    Logger.info(`Excel parsing complete: ${JSON.stringify({
+      totalRows: jsonData.length,
+      firstRow: jsonData[0],
+      columnNames: jsonData.length > 0 ? Object.keys(jsonData[0]) : [],
+    })}`);
+
     if (jsonData.length === 0) {
       return res.status(400).json({ message: "Excel file is empty" });
     }
@@ -267,8 +273,22 @@ export const createBulkStoreProducts = async (
       const rowNumber = i + 2;
 
       try {
+        // Log the row data for debugging
+        Logger.info(`Row ${rowNumber} data: ${JSON.stringify({
+          name: row.name,
+          category: row.category,
+          allKeys: Object.keys(row),
+          rawRow: row,
+        })}`);
+
         // Validate required fields
         if (!row.name || !row.category) {
+          Logger.warn(`Row ${rowNumber} validation failed: ${JSON.stringify({
+            name: row.name,
+            nameType: typeof row.name,
+            category: row.category,
+            categoryType: typeof row.category,
+          })}`);
           errors.push({
             row: rowNumber,
             message: "Name and category are required",
