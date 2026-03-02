@@ -158,6 +158,7 @@ export const getStoreByDomain = async (
               $project: {
                 name: 1,
                 rate_change: 1,
+                is_default: 1,
               },
             },
           ],
