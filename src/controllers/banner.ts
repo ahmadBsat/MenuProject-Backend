@@ -5,7 +5,6 @@ import { ERRORS } from "../constant/errors";
 import { StoreModel } from "../schemas/store/store";
 import { BannerModel } from "../schemas/banner";
 import { calculate_pages, handleParams, success_msg } from "../utils/common";
-import { CurrencyModel } from "../schemas/currency";
 
 export const getBannerById = async (
   req: express.Request,

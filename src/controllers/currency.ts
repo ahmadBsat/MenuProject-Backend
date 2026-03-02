@@ -93,6 +93,21 @@ export const createStoreCurrency = async (
       return res.status(404).json({ message: ERRORS.NO_USER_STORE });
     }
 
+    // Check if trying to set as default when another default exists
+    if (data.is_default === true) {
+      const existingDefault = await CurrencyModel.findOne({
+        store: store._id,
+        is_default: true,
+      }).lean();
+
+      if (existingDefault) {
+        return res
+          .status(400)
+          .json({ message: "A default currency already exists for this store" })
+          .end();
+      }
+    }
+
     await CurrencyModel.create({ ...data, store: store._id });
 
     return res.status(200).json(success_msg("Store currency created")).end();
@@ -120,6 +135,22 @@ export const updateStoreCurrency = async (
 
     if (!store) {
       return res.status(404).json({ message: ERRORS.NO_USER_STORE });
+    }
+
+    // Check if trying to set as default when another default exists
+    if (data.is_default === true) {
+      const existingDefault = await CurrencyModel.findOne({
+        store: store._id,
+        is_default: true,
+        _id: { $ne: id }, // Exclude current currency being updated
+      }).lean();
+
+      if (existingDefault) {
+        return res
+          .status(400)
+          .json({ message: "A default currency already exists for this store" })
+          .end();
+      }
     }
 
     await CurrencyModel.updateOne(
