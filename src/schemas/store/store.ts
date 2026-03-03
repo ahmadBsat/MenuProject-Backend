@@ -42,6 +42,14 @@ export const StoreSchema = new mongoose.Schema(
     settings: {
       display_pricing: { type: Boolean, default: true },
       allow_branch_cart_modifications: { type: Boolean, default: false },
+      branch_popup: {
+        title: { type: String, required: false, default: "Choose Branch" },
+        description: {
+          type: String,
+          required: false,
+          default: "Select one of the available branches.",
+        },
+      }
     },
     background_image: { type: String, required: false, default: "" },
     renewal_date: { type: Date, required: false },
