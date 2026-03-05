@@ -38,6 +38,7 @@ export const ProductSchema = new mongoose.Schema(
     price: { type: Number, required: true },
     images: [{ type: String, required: true }],
     additions: [AdditionSchema],
+    order: { type: Number, required: false, default: 0 },
     category: [
       {
         type: mongoose.Schema.Types.ObjectId,
