@@ -20,6 +20,7 @@ export const StoreSchema = new mongoose.Schema(
       header_text_color: { type: String, required: false, default: "white" },
       price_color: { type: String, required: false, default: "white" },
       primary: { type: String, required: false, default: "#a41f13" },
+      secondary: { type: String, required: false, default: "white" },
       checkout_background: { type: String, required: false, default: "white" },
       checkout_content: { type: String, required: false, default: "white" },
       category_color: { type: String, required: false, default: "white" },
